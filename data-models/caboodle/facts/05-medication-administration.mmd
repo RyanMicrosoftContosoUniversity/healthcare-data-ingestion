@@ -1,0 +1,76 @@
+---
+title: Caboodle - FactMedicationAdministration
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: FactMedicationAdministration.
+%% Context tables (keys/identifiers only): DimPatient, DimDepartment, DimProvider, DimMedication, DimDate.
+%% One administration/non-administration. Lookup: AdministeredAtUtc, otherwise RecordedAtUtc.
+%% Unique event identity: OriginSystem plus this fact table's source event ID.
+%% Source IDs are lineage only: no cross-database or fact-to-fact foreign keys.
+%% Repeated date relationships represent roles of the same physical DimDate.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    FactMedicationAdministration {
+        bigint MedicationAdministrationKey PK
+        bigint SourceMedicationAdministrationID
+        bigint SourceEncounterID
+        bigint SourceMedicationOrderID
+        bigint PatientKey FK
+        bigint DepartmentKey FK
+        bigint MedicationKey FK
+        bigint AdministeringProviderKey FK "NULL"
+        int AdministrationDateKey FK "NULL"
+        int RecordedDateKey FK
+        datetime2(7) ScheduledAtUtc "NULL"
+        datetime2(7) RecordedAtUtc
+        datetime2(7) AdministeredAtUtc "NULL"
+        decimal AdministeredDose "NULL; decimal(18,4)"
+        varchar(30) DoseUnit "NULL"
+        varchar(20) AdministrationStatus
+        int AdministrationEventCount
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimPatient {
+        bigint PatientKey PK
+        varchar(30) MedicalRecordNumber
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDepartment {
+        bigint DepartmentKey PK
+        varchar(30) DepartmentCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimProvider {
+        bigint ProviderKey PK
+        varchar(30) ProviderCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimMedication {
+        bigint MedicationKey PK
+        varchar(30) MedicationCodeSystem
+        varchar(50) MedicationCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDate {
+        int DateKey PK
+        date CalendarDate UK
+    }
+
+    DimPatient ||..o{ FactMedicationAdministration : PatientKey
+    DimDepartment ||..o{ FactMedicationAdministration : DepartmentKey
+    DimProvider |o..o{ FactMedicationAdministration : AdministeringProviderKey
+    DimMedication ||..o{ FactMedicationAdministration : MedicationKey
+    DimDate |o..o{ FactMedicationAdministration : AdministrationDateKey
+    DimDate ||..o{ FactMedicationAdministration : RecordedDateKey

@@ -1,0 +1,71 @@
+---
+title: Caboodle - FactDiagnosis
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: FactDiagnosis.
+%% Context tables (keys/identifiers only): DimPatient, DimDepartment, DimProvider, DimDiagnosis, DimDate.
+%% One diagnosis assignment. Lookup time: DiagnosedAtUtc.
+%% Unique event identity: OriginSystem plus this fact table's source event ID.
+%% Source IDs are lineage only: no cross-database or fact-to-fact foreign keys.
+%% Repeated date relationships represent roles of the same physical DimDate.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    FactDiagnosis {
+        bigint DiagnosisFactKey PK
+        bigint SourceDiagnosisID
+        bigint SourceEncounterID
+        bigint PatientKey FK
+        bigint DepartmentKey FK
+        bigint DiagnosisKey FK
+        bigint DiagnosingProviderKey FK "NULL"
+        int DiagnosisDateKey FK
+        datetime2(7) DiagnosedAtUtc
+        smallint DiagnosisSequence
+        bit IsPrimary
+        varchar(20) DiagnosisStatus
+        int DiagnosisCount
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimPatient {
+        bigint PatientKey PK
+        varchar(30) MedicalRecordNumber
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDepartment {
+        bigint DepartmentKey PK
+        varchar(30) DepartmentCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimProvider {
+        bigint ProviderKey PK
+        varchar(30) ProviderCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDiagnosis {
+        bigint DiagnosisKey PK
+        varchar(30) DiagnosisCodeSystem
+        varchar(30) DiagnosisCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDate {
+        int DateKey PK
+        date CalendarDate UK
+    }
+
+    DimPatient ||..o{ FactDiagnosis : PatientKey
+    DimDepartment ||..o{ FactDiagnosis : DepartmentKey
+    DimProvider |o..o{ FactDiagnosis : DiagnosingProviderKey
+    DimDiagnosis ||..o{ FactDiagnosis : DiagnosisKey
+    DimDate ||..o{ FactDiagnosis : DiagnosisDateKey

@@ -1,0 +1,39 @@
+---
+title: Shared column reference - Not physical tables
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% The boxes below are column groups, not physical tables; there are no FK relationships.
+%% Clarity_Audit_Columns applies to all 13 Clarity tables.
+%% Caboodle_ETL_Audit_Columns applies to all 15 Caboodle tables.
+%% Caboodle_Origin_Columns applies to every Caboodle table except DimDate.
+%% OriginSystem is also shown in full Caboodle models because it scopes business-key uniqueness.
+%% Clarity watermark: ModifiedAtUtc. Caboodle watermark: EtlModifiedAtUtc.
+%% OriginModifiedAtUtc is source lineage, not the Caboodle extraction watermark.
+%% Type 2 history columns are shown in the focused dimension review diagrams.
+erDiagram
+    direction LR
+    Clarity_Audit_Columns {
+        datetime2(7) CreatedAtUtc
+        datetime2(7) ModifiedAtUtc
+        bit IsDeleted
+        datetime2(7) DeletedAtUtc "NULL"
+    }
+
+    Caboodle_ETL_Audit_Columns {
+        datetime2(7) EtlCreatedAtUtc
+        datetime2(7) EtlModifiedAtUtc
+        uniqueidentifier EtlBatchID
+    }
+
+    Caboodle_Origin_Columns {
+        varchar(30) OriginSystem "Business-key scope"
+        datetime2(7) OriginModifiedAtUtc
+        bit IsDeleted
+    }
+

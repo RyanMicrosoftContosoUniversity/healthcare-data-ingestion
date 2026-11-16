@@ -1,0 +1,46 @@
+---
+title: Caboodle dimensions - Provider and department
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: DimProvider, DimDepartment.
+%% Context tables (keys/identifiers only): none.
+%% Independent Type 2 dimensions; no provider-to-department assignment table is modeled.
+%% Version identity: OriginSystem plus source entity ID plus EffectiveFromUtc.
+%% One current version per origin/source identity; version intervals must not overlap.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    DimProvider {
+        bigint ProviderKey PK
+        bigint SourceProviderID
+        varchar(30) ProviderCode
+        nvarchar(200) DisplayName
+        varchar(30) ProviderTypeCode
+        varchar(30) SpecialtyCode "NULL"
+        bit IsActive
+        datetime2(7) EffectiveFromUtc "Inclusive"
+        datetime2(7) EffectiveToUtc "NULL; Exclusive"
+        bit IsCurrent
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDepartment {
+        bigint DepartmentKey PK
+        bigint SourceDepartmentID
+        varchar(30) DepartmentCode
+        nvarchar(150) DepartmentName
+        varchar(30) FacilityCode
+        varchar(30) DepartmentTypeCode
+        bit IsActive
+        datetime2(7) EffectiveFromUtc "Inclusive"
+        datetime2(7) EffectiveToUtc "NULL; Exclusive"
+        bit IsCurrent
+        varchar(30) OriginSystem "Business-key scope"
+    }
+

@@ -1,0 +1,74 @@
+---
+title: Clarity - Clinical observations
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: Diagnosis, Procedure, VitalSign.
+%% Context tables (keys/identifiers only): Encounter, Provider.
+%% Diagnosis: unique EncounterID plus DiagnosisSequence; at most one active primary diagnosis.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    Diagnosis {
+        bigint DiagnosisID PK
+        bigint EncounterID FK
+        bigint DiagnosingProviderID FK "NULL"
+        varchar(30) DiagnosisCodeSystem
+        varchar(30) DiagnosisCode
+        nvarchar(250) DiagnosisDescription
+        smallint DiagnosisSequence
+        bit IsPrimary
+        datetime2(7) DiagnosedAtUtc
+        varchar(20) DiagnosisStatus
+    }
+
+    Procedure {
+        bigint ProcedureID PK
+        bigint EncounterID FK
+        bigint PerformingProviderID FK "NULL"
+        varchar(30) ProcedureCodeSystem
+        varchar(30) ProcedureCode
+        nvarchar(250) ProcedureDescription
+        datetime2(7) OrderedAtUtc
+        datetime2(7) PerformedAtUtc "NULL"
+        varchar(20) ProcedureStatus
+    }
+
+    VitalSign {
+        bigint VitalSignID PK
+        bigint EncounterID FK
+        bigint RecordingProviderID FK "NULL"
+        varchar(40) VitalTypeCode
+        decimal NumericValue "NULL; decimal(18,6)"
+        nvarchar(250) TextValue "NULL"
+        varchar(30) ValueUnit "NULL"
+        datetime2(7) MeasuredAtUtc
+        varchar(20) ObservationStatus
+    }
+
+    Encounter {
+        bigint EncounterID PK
+        varchar(40) EncounterNumber UK
+        bigint PatientID FK "Off-diagram FK to Patient.PatientID"
+        bigint DepartmentID FK "Off-diagram FK to Department.DepartmentID"
+        bigint AttendingProviderID FK "NULL"
+        bigint PrimaryCoverageID FK "NULL; Off-diagram FK to Coverage.CoverageID"
+    }
+
+    Provider {
+        bigint ProviderID PK
+        varchar(30) ProviderCode UK
+    }
+
+    Provider |o..o{ Encounter : AttendingProviderID
+    Encounter ||..o{ Diagnosis : EncounterID
+    Provider |o..o{ Diagnosis : DiagnosingProviderID
+    Encounter ||..o{ Procedure : EncounterID
+    Provider |o..o{ Procedure : PerformingProviderID
+    Encounter ||..o{ VitalSign : EncounterID
+    Provider |o..o{ VitalSign : RecordingProviderID

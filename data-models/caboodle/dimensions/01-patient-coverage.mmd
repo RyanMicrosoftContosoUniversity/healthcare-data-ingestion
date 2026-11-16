@@ -1,0 +1,58 @@
+---
+title: Caboodle dimensions - Patient and coverage
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: DimPatient, DimCoverage.
+%% Context tables (keys/identifiers only): none.
+%% Two independent Type 2 dimensions. SourcePatientID is lineage, not a surrogate-key FK.
+%% Logical association: OriginSystem plus SourcePatientID identifies the same patient.
+%% No direct FK edge: those identifiers do not identify a unique historical patient version.
+%% Version identity: OriginSystem plus source entity ID plus EffectiveFromUtc.
+%% One current version per origin/source identity; version intervals must not overlap.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    DimPatient {
+        bigint PatientKey PK
+        bigint SourcePatientID "Source patient identity; not FK"
+        varchar(30) MedicalRecordNumber
+        nvarchar(100) FirstName
+        nvarchar(100) LastName
+        date BirthDate
+        varchar(20) AdministrativeSexCode
+        nvarchar(100) City "NULL"
+        varchar(10) StateCode "NULL"
+        varchar(20) PostalCode "NULL"
+        date DeathDate "NULL"
+        varchar(20) PatientStatus
+        datetime2(7) EffectiveFromUtc "Inclusive"
+        datetime2(7) EffectiveToUtc "NULL; Exclusive"
+        bit IsCurrent
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimCoverage {
+        bigint CoverageKey PK
+        bigint SourceCoverageID
+        bigint SourcePatientID "Logical patient association; not FK"
+        varchar(40) CoverageNumber
+        varchar(30) PayerCode
+        nvarchar(150) PayerName
+        varchar(40) PlanCode
+        nvarchar(150) PlanName
+        varchar(30) CoverageTypeCode
+        date EffectiveDate
+        date TerminationDate "NULL"
+        varchar(20) CoverageStatus
+        datetime2(7) EffectiveFromUtc "Inclusive"
+        datetime2(7) EffectiveToUtc "NULL; Exclusive"
+        bit IsCurrent
+        varchar(30) OriginSystem "Business-key scope"
+    }
+

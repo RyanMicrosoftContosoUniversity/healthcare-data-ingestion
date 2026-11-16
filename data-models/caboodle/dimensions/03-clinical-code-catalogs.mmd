@@ -1,0 +1,42 @@
+---
+title: Caboodle dimensions - Clinical code catalogs
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: DimDiagnosis, DimProcedure, DimMedication.
+%% Context tables (keys/identifiers only): none.
+%% Independent catalogs, not relationships between diagnoses, procedures, and medications.
+%% Unique business key in each catalog: OriginSystem plus its CodeSystem plus its Code.
+%% Type 1 label corrections; dose, route, and frequency belong to events, not DimMedication.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    DimDiagnosis {
+        bigint DiagnosisKey PK
+        varchar(30) DiagnosisCodeSystem
+        varchar(30) DiagnosisCode
+        nvarchar(250) DiagnosisDescription
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimProcedure {
+        bigint ProcedureKey PK
+        varchar(30) ProcedureCodeSystem
+        varchar(30) ProcedureCode
+        nvarchar(250) ProcedureDescription
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimMedication {
+        bigint MedicationKey PK
+        varchar(30) MedicationCodeSystem
+        varchar(50) MedicationCode
+        nvarchar(200) MedicationName
+        varchar(30) OriginSystem "Business-key scope"
+    }
+

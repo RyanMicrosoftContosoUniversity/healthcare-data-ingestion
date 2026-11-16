@@ -1,0 +1,29 @@
+---
+title: Caboodle dimensions - Calendar
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: DimDate.
+%% Context tables (keys/identifiers only): none.
+%% Static UTC calendar. DateKey is YYYYMMDD; CalendarDate is unique.
+%% DimDate does not inherit Caboodle origin fields or Type 2 history fields.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    DimDate {
+        int DateKey PK
+        date CalendarDate UK
+        smallint CalendarYear
+        tinyint CalendarQuarter
+        tinyint MonthNumber
+        nvarchar(10) MonthName
+        tinyint DayOfMonth
+        tinyint IsoDayOfWeek
+        bit IsWeekend
+    }
+

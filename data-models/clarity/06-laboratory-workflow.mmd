@@ -1,0 +1,62 @@
+---
+title: Clarity - Laboratory workflow
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: LaboratoryOrder, LaboratoryResult.
+%% Context tables (keys/identifiers only): Encounter, Provider.
+%% One laboratory order can produce many result components; corrections retain the result ID.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    LaboratoryOrder {
+        bigint LaboratoryOrderID PK
+        bigint EncounterID FK
+        bigint OrderingProviderID FK
+        varchar(40) OrderNumber UK
+        varchar(40) TestCode
+        nvarchar(200) TestName
+        varchar(30) SpecimenTypeCode "NULL"
+        datetime2(7) OrderedAtUtc
+        datetime2(7) CollectedAtUtc "NULL"
+        varchar(20) OrderStatus
+    }
+
+    LaboratoryResult {
+        bigint LaboratoryResultID PK
+        bigint LaboratoryOrderID FK
+        varchar(40) ComponentCode
+        nvarchar(200) ComponentName
+        decimal NumericValue "NULL; decimal(18,6)"
+        nvarchar(1000) TextValue "NULL"
+        varchar(30) ResultUnit "NULL"
+        decimal ReferenceLow "NULL; decimal(18,6)"
+        decimal ReferenceHigh "NULL; decimal(18,6)"
+        varchar(20) AbnormalFlag "NULL"
+        datetime2(7) ResultedAtUtc "NULL"
+        varchar(20) ResultStatus
+    }
+
+    Encounter {
+        bigint EncounterID PK
+        varchar(40) EncounterNumber UK
+        bigint PatientID FK "Off-diagram FK to Patient.PatientID"
+        bigint DepartmentID FK "Off-diagram FK to Department.DepartmentID"
+        bigint AttendingProviderID FK "NULL"
+        bigint PrimaryCoverageID FK "NULL; Off-diagram FK to Coverage.CoverageID"
+    }
+
+    Provider {
+        bigint ProviderID PK
+        varchar(30) ProviderCode UK
+    }
+
+    Provider |o..o{ Encounter : AttendingProviderID
+    Encounter ||..o{ LaboratoryOrder : EncounterID
+    Provider ||..o{ LaboratoryOrder : OrderingProviderID
+    LaboratoryOrder ||..o{ LaboratoryResult : LaboratoryOrderID

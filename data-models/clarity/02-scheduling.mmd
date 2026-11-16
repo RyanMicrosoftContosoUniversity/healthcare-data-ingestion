@@ -1,0 +1,62 @@
+---
+title: Clarity - Scheduling
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: Appointment.
+%% Context tables (keys/identifiers only): Patient, Provider, Department, Encounter.
+%% EncounterID is nullable and unique when populated: at most one appointment per encounter.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    Appointment {
+        bigint AppointmentID PK
+        varchar(40) AppointmentNumber UK
+        bigint PatientID FK
+        bigint ProviderID FK "NULL"
+        bigint DepartmentID FK
+        bigint EncounterID FK "NULL"
+        datetime2(7) ScheduledStartAtUtc
+        datetime2(7) ScheduledEndAtUtc
+        varchar(30) AppointmentTypeCode
+        varchar(20) AppointmentStatus
+        datetime2(7) CanceledAtUtc "NULL"
+        nvarchar(250) CancellationReason "NULL"
+    }
+
+    Patient {
+        bigint PatientID PK
+        varchar(30) MedicalRecordNumber UK
+    }
+
+    Provider {
+        bigint ProviderID PK
+        varchar(30) ProviderCode UK
+    }
+
+    Department {
+        bigint DepartmentID PK
+        varchar(30) DepartmentCode UK
+    }
+
+    Encounter {
+        bigint EncounterID PK
+        varchar(40) EncounterNumber UK
+        bigint PatientID FK
+        bigint DepartmentID FK
+        bigint AttendingProviderID FK "NULL"
+        bigint PrimaryCoverageID FK "NULL; Off-diagram FK to Coverage.CoverageID"
+    }
+
+    Patient ||..o{ Encounter : PatientID
+    Patient ||..o{ Appointment : PatientID
+    Department ||..o{ Encounter : DepartmentID
+    Department ||..o{ Appointment : DepartmentID
+    Provider |o..o{ Encounter : AttendingProviderID
+    Provider |o..o{ Appointment : ProviderID
+    Encounter |o..o| Appointment : EncounterID

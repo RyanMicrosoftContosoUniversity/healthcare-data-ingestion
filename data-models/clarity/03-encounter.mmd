@@ -1,0 +1,64 @@
+---
+title: Clarity - Encounter and care organization
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: Encounter, Provider, Department.
+%% Context tables (keys/identifiers only): Patient, Coverage.
+%% PrimaryCoverageID must belong to the patient and cover the arrival date.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    Encounter {
+        bigint EncounterID PK
+        varchar(40) EncounterNumber UK
+        bigint PatientID FK
+        bigint DepartmentID FK
+        bigint AttendingProviderID FK "NULL"
+        bigint PrimaryCoverageID FK "NULL"
+        varchar(30) EncounterTypeCode
+        varchar(20) EncounterStatus
+        datetime2(7) ArrivalAtUtc
+        datetime2(7) DischargeAtUtc "NULL"
+        varchar(30) DischargeDispositionCode "NULL"
+    }
+
+    Provider {
+        bigint ProviderID PK
+        varchar(30) ProviderCode UK
+        nvarchar(200) DisplayName
+        varchar(30) ProviderTypeCode
+        varchar(30) SpecialtyCode "NULL"
+        bit IsActive
+    }
+
+    Department {
+        bigint DepartmentID PK
+        varchar(30) DepartmentCode UK
+        nvarchar(150) DepartmentName
+        varchar(30) FacilityCode
+        varchar(30) DepartmentTypeCode
+        bit IsActive
+    }
+
+    Patient {
+        bigint PatientID PK
+        varchar(30) MedicalRecordNumber UK
+    }
+
+    Coverage {
+        bigint CoverageID PK
+        bigint PatientID FK
+        varchar(40) CoverageNumber UK
+    }
+
+    Patient ||..o{ Encounter : PatientID
+    Patient ||..o{ Coverage : PatientID
+    Department ||..o{ Encounter : DepartmentID
+    Provider |o..o{ Encounter : AttendingProviderID
+    Coverage |o..o{ Encounter : PrimaryCoverageID

@@ -1,0 +1,44 @@
+---
+title: Clarity - Patient and coverage
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: Patient, Coverage.
+%% Context tables (keys/identifiers only): none.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    Patient {
+        bigint PatientID PK
+        varchar(30) MedicalRecordNumber UK
+        nvarchar(100) FirstName
+        nvarchar(100) LastName
+        date BirthDate
+        varchar(20) AdministrativeSexCode
+        nvarchar(100) City "NULL"
+        varchar(10) StateCode "NULL"
+        varchar(20) PostalCode "NULL"
+        date DeathDate "NULL"
+        varchar(20) PatientStatus
+    }
+
+    Coverage {
+        bigint CoverageID PK
+        bigint PatientID FK
+        varchar(40) CoverageNumber UK
+        varchar(30) PayerCode
+        nvarchar(150) PayerName
+        varchar(40) PlanCode
+        nvarchar(150) PlanName
+        varchar(30) CoverageTypeCode
+        date EffectiveDate
+        date TerminationDate "NULL"
+        varchar(20) CoverageStatus
+    }
+
+    Patient ||..o{ Coverage : PatientID

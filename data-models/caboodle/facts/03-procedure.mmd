@@ -1,0 +1,72 @@
+---
+title: Caboodle - FactProcedure
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: FactProcedure.
+%% Context tables (keys/identifiers only): DimPatient, DimDepartment, DimProvider, DimProcedure, DimDate.
+%% One procedure event. Lookup time: PerformedAtUtc, otherwise OrderedAtUtc.
+%% Unique event identity: OriginSystem plus this fact table's source event ID.
+%% Source IDs are lineage only: no cross-database or fact-to-fact foreign keys.
+%% Repeated date relationships represent roles of the same physical DimDate.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    FactProcedure {
+        bigint ProcedureFactKey PK
+        bigint SourceProcedureID
+        bigint SourceEncounterID
+        bigint PatientKey FK
+        bigint DepartmentKey FK
+        bigint ProcedureKey FK
+        bigint PerformingProviderKey FK "NULL"
+        int OrderedDateKey FK
+        int PerformedDateKey FK "NULL"
+        datetime2(7) OrderedAtUtc
+        datetime2(7) PerformedAtUtc "NULL"
+        varchar(20) ProcedureStatus
+        int ProcedureCount
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimPatient {
+        bigint PatientKey PK
+        varchar(30) MedicalRecordNumber
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDepartment {
+        bigint DepartmentKey PK
+        varchar(30) DepartmentCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimProvider {
+        bigint ProviderKey PK
+        varchar(30) ProviderCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimProcedure {
+        bigint ProcedureKey PK
+        varchar(30) ProcedureCodeSystem
+        varchar(30) ProcedureCode
+        varchar(30) OriginSystem "Business-key scope"
+    }
+
+    DimDate {
+        int DateKey PK
+        date CalendarDate UK
+    }
+
+    DimPatient ||..o{ FactProcedure : PatientKey
+    DimDepartment ||..o{ FactProcedure : DepartmentKey
+    DimProvider |o..o{ FactProcedure : PerformingProviderKey
+    DimProcedure ||..o{ FactProcedure : ProcedureKey
+    DimDate ||..o{ FactProcedure : OrderedDateKey
+    DimDate |o..o{ FactProcedure : PerformedDateKey

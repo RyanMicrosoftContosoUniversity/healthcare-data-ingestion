@@ -1,0 +1,65 @@
+---
+title: Clarity - Medication workflow
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW - synthetic schemas, not proprietary Epic definitions.
+%% NOT NULL unless a column comment starts with NULL.
+%% PK = primary key; FK = foreign key; UK = single-column unique key.
+%% Dashed edges are non-identifying; endpoint symbols indicate optionality.
+%% Shared audit columns are omitted; see shared\01-audit-columns.mmd.
+%% Full business columns: MedicationOrder, MedicationAdministration.
+%% Context tables (keys/identifiers only): Encounter, Provider.
+%% MedicationAdministration includes documented non-administrations; actual dose/time can be NULL.
+%% Every displayed table retains all declared FK columns, including off-diagram targets.
+erDiagram
+    direction LR
+    MedicationOrder {
+        bigint MedicationOrderID PK
+        bigint EncounterID FK
+        bigint OrderingProviderID FK
+        varchar(30) MedicationCodeSystem
+        varchar(50) MedicationCode
+        nvarchar(200) MedicationName
+        decimal OrderedDose "NULL; decimal(18,4)"
+        varchar(30) DoseUnit "NULL"
+        varchar(30) RouteCode "NULL"
+        varchar(30) FrequencyCode "NULL"
+        datetime2(7) OrderedAtUtc
+        datetime2(7) StartAtUtc "NULL"
+        datetime2(7) EndAtUtc "NULL"
+        varchar(20) OrderStatus
+    }
+
+    MedicationAdministration {
+        bigint MedicationAdministrationID PK
+        bigint MedicationOrderID FK
+        bigint AdministeringProviderID FK "NULL"
+        datetime2(7) ScheduledAtUtc "NULL"
+        datetime2(7) RecordedAtUtc
+        datetime2(7) AdministeredAtUtc "NULL"
+        decimal AdministeredDose "NULL; decimal(18,4)"
+        varchar(30) DoseUnit "NULL"
+        varchar(20) AdministrationStatus
+        nvarchar(250) NotGivenReason "NULL"
+    }
+
+    Encounter {
+        bigint EncounterID PK
+        varchar(40) EncounterNumber UK
+        bigint PatientID FK "Off-diagram FK to Patient.PatientID"
+        bigint DepartmentID FK "Off-diagram FK to Department.DepartmentID"
+        bigint AttendingProviderID FK "NULL"
+        bigint PrimaryCoverageID FK "NULL; Off-diagram FK to Coverage.CoverageID"
+    }
+
+    Provider {
+        bigint ProviderID PK
+        varchar(30) ProviderCode UK
+    }
+
+    Provider |o..o{ Encounter : AttendingProviderID
+    Encounter ||..o{ MedicationOrder : EncounterID
+    Provider ||..o{ MedicationOrder : OrderingProviderID
+    MedicationOrder ||..o{ MedicationAdministration : MedicationOrderID
+    Provider |o..o{ MedicationAdministration : AdministeringProviderID
