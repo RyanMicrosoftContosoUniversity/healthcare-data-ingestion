@@ -1,0 +1,46 @@
+---
+title: Framework - Validation and benchmarks
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW. No framework tables have been deployed.
+%% Keys and selected review fields only; full definitions are in docs\ingestion\metadata-design.md.
+%% Every declared FK is retained, including references to off-diagram tables.
+%% Common configuration audit/revision columns and metric columns are omitted.
+erDiagram
+    direction LR
+    IngestionError {
+        uniqueidentifier ErrorID PK
+        uniqueidentifier RunID FK "Off-diagram FK to ops.IngestionRun"
+        uniqueidentifier TableRunID FK "NULL; Off-diagram FK to ops.IngestionTableRun"
+        uniqueidentifier StepExecutionID FK "NULL"
+        varchar(32) FailurePhase
+        nvarchar(128) ErrorCode
+    }
+
+    SchemaChangeLog {
+        uniqueidentifier SchemaChangeID PK
+        uniqueidentifier RunID FK "Off-diagram FK to ops.IngestionRun"
+        uniqueidentifier TableRunID FK "Off-diagram FK to ops.IngestionTableRun"
+        varchar(24) Disposition
+    }
+
+    ReconciliationResult {
+        uniqueidentifier ReconciliationID PK
+        uniqueidentifier RunID FK "Off-diagram FK to ops.IngestionRun"
+        uniqueidentifier TableRunID FK "Off-diagram FK to ops.IngestionTableRun"
+        nvarchar(128) CheckName
+        varchar(16) Status
+    }
+
+    IngestionTransformationRun {
+        uniqueidentifier StepExecutionID PK
+        uniqueidentifier RunID FK "Off-diagram FK to ops.IngestionRun"
+        uniqueidentifier TableRunID FK "Off-diagram FK to ops.IngestionTableRun"
+        bigint TransformationStepID FK "Off-diagram FK to cfg.TransformationStep"
+        int TrialNumber
+        int StepOrdinal
+        decimal MaterializeDurationSeconds "NULL; SQL decimal(20,6)"
+    }
+
+    IngestionTransformationRun |o..o{ IngestionError : StepExecutionID

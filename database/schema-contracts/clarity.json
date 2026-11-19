@@ -1,0 +1,1209 @@
+{
+  "schema_version": 1,
+  "source_system": "Clarity",
+  "schema": "dbo",
+  "tables": [
+    {
+      "name": "Patient",
+      "primary_key": [
+        "PatientID"
+      ],
+      "columns": [
+        {
+          "name": "PatientID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; stable patient identifier used by related tables."
+        },
+        {
+          "name": "MedicalRecordNumber",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "UQ; synthetic hospital medical record number."
+        },
+        {
+          "name": "FirstName",
+          "sql_type": "nvarchar(100)",
+          "nullable": false,
+          "purpose": "Synthetic given name."
+        },
+        {
+          "name": "LastName",
+          "sql_type": "nvarchar(100)",
+          "nullable": false,
+          "purpose": "Synthetic family name."
+        },
+        {
+          "name": "BirthDate",
+          "sql_type": "date",
+          "nullable": false,
+          "purpose": "Date of birth for age-based reporting."
+        },
+        {
+          "name": "AdministrativeSexCode",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Administrative demographic code, including an unknown value."
+        },
+        {
+          "name": "City",
+          "sql_type": "nvarchar(100)",
+          "nullable": true,
+          "purpose": "Synthetic city of residence."
+        },
+        {
+          "name": "StateCode",
+          "sql_type": "varchar(10)",
+          "nullable": true,
+          "purpose": "State or region code."
+        },
+        {
+          "name": "PostalCode",
+          "sql_type": "varchar(20)",
+          "nullable": true,
+          "purpose": "Postal identifier stored as text to preserve leading zeros."
+        },
+        {
+          "name": "DeathDate",
+          "sql_type": "date",
+          "nullable": true,
+          "purpose": "Date of death when applicable."
+        },
+        {
+          "name": "PatientStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Operational patient status, such as active or inactive."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "Provider",
+      "primary_key": [
+        "ProviderID"
+      ],
+      "columns": [
+        {
+          "name": "ProviderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; provider identifier."
+        },
+        {
+          "name": "ProviderCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "UQ; stable source business identifier."
+        },
+        {
+          "name": "DisplayName",
+          "sql_type": "nvarchar(200)",
+          "nullable": false,
+          "purpose": "Synthetic provider display name."
+        },
+        {
+          "name": "ProviderTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Provider role or professional category."
+        },
+        {
+          "name": "SpecialtyCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Primary specialty classification."
+        },
+        {
+          "name": "IsActive",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates whether the provider is currently active."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "Department",
+      "primary_key": [
+        "DepartmentID"
+      ],
+      "columns": [
+        {
+          "name": "DepartmentID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; department identifier."
+        },
+        {
+          "name": "DepartmentCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "UQ; stable department business code."
+        },
+        {
+          "name": "DepartmentName",
+          "sql_type": "nvarchar(150)",
+          "nullable": false,
+          "purpose": "Department display name."
+        },
+        {
+          "name": "FacilityCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Synthetic facility containing the department."
+        },
+        {
+          "name": "DepartmentTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Classification such as inpatient, outpatient, or emergency."
+        },
+        {
+          "name": "IsActive",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates whether the department is currently active."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "Encounter",
+      "primary_key": [
+        "EncounterID"
+      ],
+      "columns": [
+        {
+          "name": "EncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; encounter identifier."
+        },
+        {
+          "name": "EncounterNumber",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "UQ; source visit or admission business identifier."
+        },
+        {
+          "name": "PatientID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Patient.PatientID`."
+        },
+        {
+          "name": "DepartmentID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Department.DepartmentID`; encounter department."
+        },
+        {
+          "name": "AttendingProviderID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Provider.ProviderID`; assigned attending provider."
+        },
+        {
+          "name": "PrimaryCoverageID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Coverage.CoverageID`; explicitly assigned primary enrollment, if known."
+        },
+        {
+          "name": "EncounterTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Visit classification."
+        },
+        {
+          "name": "EncounterStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Status such as planned, in progress, completed, or canceled."
+        },
+        {
+          "name": "ArrivalAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Start of the encounter."
+        },
+        {
+          "name": "DischargeAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "End of the encounter; absent for open encounters."
+        },
+        {
+          "name": "DischargeDispositionCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Discharge outcome classification."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "Diagnosis",
+      "primary_key": [
+        "DiagnosisID"
+      ],
+      "columns": [
+        {
+          "name": "DiagnosisID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; diagnosis assignment identifier."
+        },
+        {
+          "name": "EncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Encounter.EncounterID`."
+        },
+        {
+          "name": "DiagnosingProviderID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Provider.ProviderID`."
+        },
+        {
+          "name": "DiagnosisCodeSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Code namespace; use a documented synthetic value set."
+        },
+        {
+          "name": "DiagnosisCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Diagnosis business code within the code system."
+        },
+        {
+          "name": "DiagnosisDescription",
+          "sql_type": "nvarchar(250)",
+          "nullable": false,
+          "purpose": "Synthetic diagnosis label."
+        },
+        {
+          "name": "DiagnosisSequence",
+          "sql_type": "smallint",
+          "nullable": false,
+          "purpose": "Positive ordering within the encounter."
+        },
+        {
+          "name": "IsPrimary",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Identifies the primary diagnosis assignment."
+        },
+        {
+          "name": "DiagnosedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Clinical assignment timestamp."
+        },
+        {
+          "name": "DiagnosisStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Assignment status, including corrected or canceled scenarios."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "Procedure",
+      "primary_key": [
+        "ProcedureID"
+      ],
+      "columns": [
+        {
+          "name": "ProcedureID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; procedure event identifier."
+        },
+        {
+          "name": "EncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Encounter.EncounterID`."
+        },
+        {
+          "name": "PerformingProviderID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Provider.ProviderID`."
+        },
+        {
+          "name": "ProcedureCodeSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Namespace for the synthetic procedure code."
+        },
+        {
+          "name": "ProcedureCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Procedure business code within the code system."
+        },
+        {
+          "name": "ProcedureDescription",
+          "sql_type": "nvarchar(250)",
+          "nullable": false,
+          "purpose": "Procedure label."
+        },
+        {
+          "name": "OrderedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Time the procedure was requested."
+        },
+        {
+          "name": "PerformedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Actual performance time; absent for unperformed orders."
+        },
+        {
+          "name": "ProcedureStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Status such as ordered, completed, or canceled."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "MedicationOrder",
+      "primary_key": [
+        "MedicationOrderID"
+      ],
+      "columns": [
+        {
+          "name": "MedicationOrderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; medication order identifier."
+        },
+        {
+          "name": "EncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Encounter.EncounterID`."
+        },
+        {
+          "name": "OrderingProviderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Provider.ProviderID`."
+        },
+        {
+          "name": "MedicationCodeSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Namespace for the synthetic medication identifier."
+        },
+        {
+          "name": "MedicationCode",
+          "sql_type": "varchar(50)",
+          "nullable": false,
+          "purpose": "Medication product code within the code system."
+        },
+        {
+          "name": "MedicationName",
+          "sql_type": "nvarchar(200)",
+          "nullable": false,
+          "purpose": "Synthetic medication display name."
+        },
+        {
+          "name": "OrderedDose",
+          "sql_type": "decimal(18,4)",
+          "nullable": true,
+          "purpose": "Structured ordered quantity; absent for text-only instructions."
+        },
+        {
+          "name": "DoseUnit",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Unit associated with `OrderedDose`."
+        },
+        {
+          "name": "RouteCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Administration route classification."
+        },
+        {
+          "name": "FrequencyCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Synthetic frequency classification."
+        },
+        {
+          "name": "OrderedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Order creation event time."
+        },
+        {
+          "name": "StartAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Intended treatment start time."
+        },
+        {
+          "name": "EndAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Intended or actual end time."
+        },
+        {
+          "name": "OrderStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Status such as active, discontinued, or canceled."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "MedicationAdministration",
+      "primary_key": [
+        "MedicationAdministrationID"
+      ],
+      "columns": [
+        {
+          "name": "MedicationAdministrationID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; administration event identifier."
+        },
+        {
+          "name": "MedicationOrderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `MedicationOrder.MedicationOrderID`; determines the encounter."
+        },
+        {
+          "name": "AdministeringProviderID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Provider.ProviderID`."
+        },
+        {
+          "name": "ScheduledAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Planned administration time."
+        },
+        {
+          "name": "RecordedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Time the administration or non-administration was documented."
+        },
+        {
+          "name": "AdministeredAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Actual event time; absent when not administered."
+        },
+        {
+          "name": "AdministeredDose",
+          "sql_type": "decimal(18,4)",
+          "nullable": true,
+          "purpose": "Actual quantity administered, when applicable."
+        },
+        {
+          "name": "DoseUnit",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Unit for the administered quantity."
+        },
+        {
+          "name": "AdministrationStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Status such as given, held, refused, or not given."
+        },
+        {
+          "name": "NotGivenReason",
+          "sql_type": "nvarchar(250)",
+          "nullable": true,
+          "purpose": "Synthetic explanation for a non-administration."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "LaboratoryOrder",
+      "primary_key": [
+        "LaboratoryOrderID"
+      ],
+      "columns": [
+        {
+          "name": "LaboratoryOrderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; laboratory order identifier."
+        },
+        {
+          "name": "EncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Encounter.EncounterID`."
+        },
+        {
+          "name": "OrderingProviderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Provider.ProviderID`."
+        },
+        {
+          "name": "OrderNumber",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "UQ; laboratory order business identifier."
+        },
+        {
+          "name": "TestCode",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Synthetic ordered test or panel code."
+        },
+        {
+          "name": "TestName",
+          "sql_type": "nvarchar(200)",
+          "nullable": false,
+          "purpose": "Test or panel name."
+        },
+        {
+          "name": "SpecimenTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Specimen classification."
+        },
+        {
+          "name": "OrderedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Order event time."
+        },
+        {
+          "name": "CollectedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Specimen collection time."
+        },
+        {
+          "name": "OrderStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Order processing status."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "LaboratoryResult",
+      "primary_key": [
+        "LaboratoryResultID"
+      ],
+      "columns": [
+        {
+          "name": "LaboratoryResultID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; stable result component identifier."
+        },
+        {
+          "name": "LaboratoryOrderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `LaboratoryOrder.LaboratoryOrderID`."
+        },
+        {
+          "name": "ComponentCode",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Synthetic observation component code."
+        },
+        {
+          "name": "ComponentName",
+          "sql_type": "nvarchar(200)",
+          "nullable": false,
+          "purpose": "Observation component label."
+        },
+        {
+          "name": "NumericValue",
+          "sql_type": "decimal(18,6)",
+          "nullable": true,
+          "purpose": "Numeric result, when applicable."
+        },
+        {
+          "name": "TextValue",
+          "sql_type": "nvarchar(1000)",
+          "nullable": true,
+          "purpose": "Qualitative result or explanatory text."
+        },
+        {
+          "name": "ResultUnit",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Unit associated with a numeric result."
+        },
+        {
+          "name": "ReferenceLow",
+          "sql_type": "decimal(18,6)",
+          "nullable": true,
+          "purpose": "Synthetic lower reference bound in the result unit."
+        },
+        {
+          "name": "ReferenceHigh",
+          "sql_type": "decimal(18,6)",
+          "nullable": true,
+          "purpose": "Synthetic upper reference bound in the result unit."
+        },
+        {
+          "name": "AbnormalFlag",
+          "sql_type": "varchar(20)",
+          "nullable": true,
+          "purpose": "Source-provided synthetic result classification."
+        },
+        {
+          "name": "ResultedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Clinical result time; absent for pending components."
+        },
+        {
+          "name": "ResultStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Status such as pending, preliminary, final, corrected, or canceled."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "VitalSign",
+      "primary_key": [
+        "VitalSignID"
+      ],
+      "columns": [
+        {
+          "name": "VitalSignID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; observation identifier."
+        },
+        {
+          "name": "EncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Encounter.EncounterID`."
+        },
+        {
+          "name": "RecordingProviderID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Provider.ProviderID`."
+        },
+        {
+          "name": "VitalTypeCode",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Synthetic observation type, such as temperature or pulse."
+        },
+        {
+          "name": "NumericValue",
+          "sql_type": "decimal(18,6)",
+          "nullable": true,
+          "purpose": "Numeric observation value."
+        },
+        {
+          "name": "TextValue",
+          "sql_type": "nvarchar(250)",
+          "nullable": true,
+          "purpose": "Non-numeric observation value or explanation."
+        },
+        {
+          "name": "ValueUnit",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Unit for a numeric observation."
+        },
+        {
+          "name": "MeasuredAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Observation event time."
+        },
+        {
+          "name": "ObservationStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Observation lifecycle status."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "Coverage",
+      "primary_key": [
+        "CoverageID"
+      ],
+      "columns": [
+        {
+          "name": "CoverageID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; patient coverage identifier."
+        },
+        {
+          "name": "PatientID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Patient.PatientID`."
+        },
+        {
+          "name": "CoverageNumber",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "UQ; synthetic enrollment business identifier."
+        },
+        {
+          "name": "PayerCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Synthetic payer identifier."
+        },
+        {
+          "name": "PayerName",
+          "sql_type": "nvarchar(150)",
+          "nullable": false,
+          "purpose": "Synthetic payer display name."
+        },
+        {
+          "name": "PlanCode",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Plan identifier within the payer."
+        },
+        {
+          "name": "PlanName",
+          "sql_type": "nvarchar(150)",
+          "nullable": false,
+          "purpose": "Synthetic plan name."
+        },
+        {
+          "name": "CoverageTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Insurance category."
+        },
+        {
+          "name": "EffectiveDate",
+          "sql_type": "date",
+          "nullable": false,
+          "purpose": "First covered date."
+        },
+        {
+          "name": "TerminationDate",
+          "sql_type": "date",
+          "nullable": true,
+          "purpose": "Last covered date, inclusive; absent for open coverage."
+        },
+        {
+          "name": "CoverageStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Enrollment lifecycle status."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    },
+    {
+      "name": "Appointment",
+      "primary_key": [
+        "AppointmentID"
+      ],
+      "columns": [
+        {
+          "name": "AppointmentID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "PK; appointment identifier."
+        },
+        {
+          "name": "AppointmentNumber",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "UQ; scheduling business identifier."
+        },
+        {
+          "name": "PatientID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Patient.PatientID`."
+        },
+        {
+          "name": "ProviderID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Provider.ProviderID`; scheduled provider."
+        },
+        {
+          "name": "DepartmentID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `Department.DepartmentID`."
+        },
+        {
+          "name": "EncounterID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `Encounter.EncounterID`; populated if the appointment becomes an encounter."
+        },
+        {
+          "name": "ScheduledStartAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Scheduled visit start."
+        },
+        {
+          "name": "ScheduledEndAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Scheduled visit end."
+        },
+        {
+          "name": "AppointmentTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Visit scheduling category."
+        },
+        {
+          "name": "AppointmentStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Status such as scheduled, arrived, completed, canceled, or no-show."
+        },
+        {
+          "name": "CanceledAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Cancellation event time, when applicable."
+        },
+        {
+          "name": "CancellationReason",
+          "sql_type": "nvarchar(250)",
+          "nullable": true,
+          "purpose": "Synthetic cancellation explanation."
+        },
+        {
+          "name": "CreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Creation timestamp, assigned by the source write process."
+        },
+        {
+          "name": "ModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every insert, update, correction, and soft delete; proposed incremental watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Soft-delete indicator; defaults to `0`."
+        },
+        {
+          "name": "DeletedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Deletion timestamp; populated only when `IsDeleted = 1`."
+        }
+      ]
+    }
+  ]
+}

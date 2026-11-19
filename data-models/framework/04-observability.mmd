@@ -1,0 +1,48 @@
+---
+title: Framework - Observability
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW. No framework tables have been deployed.
+%% Keys and selected review fields only; full definitions are in docs\ingestion\metadata-design.md.
+%% Every declared FK is retained, including references to off-diagram tables.
+%% Common configuration audit/revision columns and metric columns are omitted.
+erDiagram
+    direction LR
+    SparkApplicationRunMetric {
+        uniqueidentifier SparkMetricID PK
+        uniqueidentifier RunID FK "Off-diagram FK to ops.IngestionRun"
+        uniqueidentifier TableRunID FK "NULL; Off-diagram FK to ops.IngestionTableRun"
+        nvarchar(128) ApplicationID
+        nvarchar(64) ApplicationAttemptID
+        varchar(16) CollectionStatus
+    }
+
+    DiagnosticCollection {
+        uniqueidentifier CollectionID PK
+        uniqueidentifier RunID FK "Off-diagram FK to ops.IngestionRun"
+        uniqueidentifier SparkMetricID FK "NULL"
+        varchar(16) Status
+        int AttemptCount
+    }
+
+    DiagnosticArtifact {
+        uniqueidentifier ArtifactID PK
+        uniqueidentifier CollectionID FK
+        varchar(32) ArtifactType
+        bit IsComplete
+    }
+
+    AlertEvent {
+        uniqueidentifier AlertEventID PK
+        uniqueidentifier PipelineID FK "NULL; Off-diagram FK to cfg.PipelineDefinition"
+        uniqueidentifier RunID FK "NULL; Off-diagram FK to ops.IngestionRun"
+        uniqueidentifier TableRunID FK "NULL; Off-diagram FK to ops.IngestionTableRun"
+        uniqueidentifier SparkMetricID FK "NULL"
+        nvarchar(128) RuleName
+        varchar(24) Status
+    }
+
+    SparkApplicationRunMetric |o..o{ DiagnosticCollection : SparkMetricID
+    DiagnosticCollection ||..o{ DiagnosticArtifact : CollectionID
+    SparkApplicationRunMetric |o..o{ AlertEvent : SparkMetricID

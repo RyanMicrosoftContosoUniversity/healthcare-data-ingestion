@@ -1,0 +1,144 @@
+---
+title: Framework - All 17 tables and 30 foreign-key relationships
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW. No framework tables have been deployed.
+%% PK/FK columns only; full definitions are in docs\ingestion\metadata-design.md.
+%% cfg: ProcessingDomain, SourceSystem, SourceObject, PipelineDefinition,
+%%      PipelineObject, TransformationStep. All other entities are in ops.
+%% Each edge label names the foreign-key column on the child entity.
+%% NULL marks optional parent references; parents may have zero child rows.
+erDiagram
+    direction LR
+
+    ProcessingDomain {
+        bigint DomainID PK
+    }
+
+    SourceSystem {
+        smallint SourceSystemID PK
+    }
+
+    SourceObject {
+        bigint SourceObjectID PK
+        smallint SourceSystemID FK
+    }
+
+    PipelineDefinition {
+        uniqueidentifier PipelineID PK
+        bigint DomainID FK
+    }
+
+    PipelineObject {
+        bigint PipelineObjectID PK
+        uniqueidentifier PipelineID FK
+        bigint SourceObjectID FK
+    }
+
+    TransformationStep {
+        bigint TransformationStepID PK
+        bigint PipelineObjectID FK
+    }
+
+    IngestionRun {
+        uniqueidentifier RunID PK
+        uniqueidentifier PipelineID FK
+    }
+
+    IngestionTableRun {
+        uniqueidentifier TableRunID PK
+        uniqueidentifier RunID FK
+        bigint PipelineObjectID FK
+    }
+
+    IngestionWatermark {
+        bigint PipelineObjectID PK, FK
+        uniqueidentifier LastSuccessfulTableRunID FK "NULL"
+        uniqueidentifier LeaseOwnerRunID FK "NULL"
+    }
+
+    IngestionError {
+        uniqueidentifier ErrorID PK
+        uniqueidentifier RunID FK
+        uniqueidentifier TableRunID FK "NULL"
+        uniqueidentifier StepExecutionID FK "NULL"
+    }
+
+    SchemaChangeLog {
+        uniqueidentifier SchemaChangeID PK
+        uniqueidentifier RunID FK
+        uniqueidentifier TableRunID FK
+    }
+
+    ReconciliationResult {
+        uniqueidentifier ReconciliationID PK
+        uniqueidentifier RunID FK
+        uniqueidentifier TableRunID FK
+    }
+
+    IngestionTransformationRun {
+        uniqueidentifier StepExecutionID PK
+        uniqueidentifier RunID FK
+        uniqueidentifier TableRunID FK
+        bigint TransformationStepID FK
+    }
+
+    SparkApplicationRunMetric {
+        uniqueidentifier SparkMetricID PK
+        uniqueidentifier RunID FK
+        uniqueidentifier TableRunID FK "NULL"
+    }
+
+    DiagnosticCollection {
+        uniqueidentifier CollectionID PK
+        uniqueidentifier RunID FK
+        uniqueidentifier SparkMetricID FK "NULL"
+    }
+
+    DiagnosticArtifact {
+        uniqueidentifier ArtifactID PK
+        uniqueidentifier CollectionID FK
+    }
+
+    AlertEvent {
+        uniqueidentifier AlertEventID PK
+        uniqueidentifier PipelineID FK "NULL"
+        uniqueidentifier RunID FK "NULL"
+        uniqueidentifier TableRunID FK "NULL"
+        uniqueidentifier SparkMetricID FK "NULL"
+    }
+
+    ProcessingDomain ||..o{ PipelineDefinition : DomainID
+    SourceSystem ||..o{ SourceObject : SourceSystemID
+    PipelineDefinition ||..o{ PipelineObject : PipelineID
+    SourceObject ||..o{ PipelineObject : SourceObjectID
+    PipelineObject ||..o{ TransformationStep : PipelineObjectID
+
+    PipelineDefinition ||..o{ IngestionRun : PipelineID
+    IngestionRun ||..o{ IngestionTableRun : RunID
+    PipelineObject ||..o{ IngestionTableRun : PipelineObjectID
+    PipelineObject ||..o| IngestionWatermark : PipelineObjectID
+    IngestionTableRun |o..o{ IngestionWatermark : LastSuccessfulTableRunID
+    IngestionRun |o..o{ IngestionWatermark : LeaseOwnerRunID
+
+    IngestionRun ||..o{ IngestionError : RunID
+    IngestionTableRun |o..o{ IngestionError : TableRunID
+    IngestionTransformationRun |o..o{ IngestionError : StepExecutionID
+    IngestionRun ||..o{ SchemaChangeLog : RunID
+    IngestionTableRun ||..o{ SchemaChangeLog : TableRunID
+    IngestionRun ||..o{ ReconciliationResult : RunID
+    IngestionTableRun ||..o{ ReconciliationResult : TableRunID
+    IngestionRun ||..o{ IngestionTransformationRun : RunID
+    IngestionTableRun ||..o{ IngestionTransformationRun : TableRunID
+    TransformationStep ||..o{ IngestionTransformationRun : TransformationStepID
+
+    IngestionRun ||..o{ SparkApplicationRunMetric : RunID
+    IngestionTableRun |o..o{ SparkApplicationRunMetric : TableRunID
+    IngestionRun ||..o{ DiagnosticCollection : RunID
+    SparkApplicationRunMetric |o..o{ DiagnosticCollection : SparkMetricID
+    DiagnosticCollection ||..o{ DiagnosticArtifact : CollectionID
+    PipelineDefinition |o..o{ AlertEvent : PipelineID
+    IngestionRun |o..o{ AlertEvent : RunID
+    IngestionTableRun |o..o{ AlertEvent : TableRunID
+    SparkApplicationRunMetric |o..o{ AlertEvent : SparkMetricID

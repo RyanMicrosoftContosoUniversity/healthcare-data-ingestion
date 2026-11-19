@@ -1,0 +1,37 @@
+---
+title: Framework - Runs and committed state
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW. No framework tables have been deployed.
+%% Keys and selected review fields only; full definitions are in docs\ingestion\metadata-design.md.
+%% Every declared FK is retained, including references to off-diagram tables.
+%% Common configuration audit/revision columns and metric columns are omitted.
+erDiagram
+    direction LR
+    IngestionRun {
+        uniqueidentifier RunID PK
+        uniqueidentifier PipelineID FK "Off-diagram FK to cfg.PipelineDefinition"
+        varchar(16) RunType
+        varchar(24) Status
+    }
+
+    IngestionTableRun {
+        uniqueidentifier TableRunID PK
+        uniqueidentifier RunID FK
+        bigint PipelineObjectID FK "Off-diagram FK to cfg.PipelineObject"
+        int AttemptNumber
+        varchar(24) Status
+    }
+
+    IngestionWatermark {
+        bigint PipelineObjectID PK, FK "Off-diagram FK to cfg.PipelineObject"
+        datetime2(7) CommittedWatermarkUtc "NULL"
+        uniqueidentifier LastSuccessfulTableRunID FK "NULL"
+        uniqueidentifier LeaseOwnerRunID FK "NULL"
+        bigint FencingToken
+    }
+
+    IngestionRun ||..o{ IngestionTableRun : RunID
+    IngestionTableRun |o..o{ IngestionWatermark : LastSuccessfulTableRunID
+    IngestionRun |o..o{ IngestionWatermark : LeaseOwnerRunID

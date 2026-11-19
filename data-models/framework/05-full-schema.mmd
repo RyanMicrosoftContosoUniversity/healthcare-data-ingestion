@@ -1,0 +1,373 @@
+---
+title: Framework - Full schema with all columns
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW. No table definitions are changed by this diagram.
+%% Every column from docs\ingestion\metadata-design.md is included.
+%% Includes all four shared audit/revision columns on every cfg table.
+%% Includes all 50 extension fields from docs\ingestion\spark-metric-columns.md.
+%% SQL decimal precision/scale is shown in comments because the type contains a comma.
+%% Entity names and all 30 relationship edges match the keys-only overview.
+erDiagram
+    direction LR
+
+    %% cfg.ProcessingDomain
+    ProcessingDomain {
+        bigint DomainID PK "NOT NULL"
+        nvarchar(64) DomainName "NOT NULL"
+        varchar(8) DefaultLoggingLevel "NOT NULL"
+        bit DefaultProfileTransformations "NOT NULL"
+        bit IsActive "NOT NULL"
+        datetime2(7) CreatedAtUtc "NOT NULL"
+        datetime2(7) ModifiedAtUtc "NOT NULL"
+        bigint ConfigRevision "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% cfg.SourceSystem
+    SourceSystem {
+        smallint SourceSystemID PK "NOT NULL"
+        varchar(30) SourceSystemName "NOT NULL"
+        nvarchar(256) ConnectionRef "NOT NULL"
+        bit IsActive "NOT NULL"
+        datetime2(7) CreatedAtUtc "NOT NULL"
+        datetime2(7) ModifiedAtUtc "NOT NULL"
+        bigint ConfigRevision "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% cfg.SourceObject
+    SourceObject {
+        bigint SourceObjectID PK "NOT NULL"
+        smallint SourceSystemID FK "NOT NULL"
+        nvarchar(128) SourceSchema "NOT NULL"
+        nvarchar(128) SourceTable "NOT NULL"
+        nvarchar(max) PrimaryKeyColumnsJson "NOT NULL"
+        nvarchar(128) WatermarkColumn "NULL"
+        varchar(40) WatermarkSqlType "NULL"
+        nvarchar(max) SchemaContractJson "NOT NULL"
+        bit IsActive "NOT NULL"
+        datetime2(7) CreatedAtUtc "NOT NULL"
+        datetime2(7) ModifiedAtUtc "NOT NULL"
+        bigint ConfigRevision "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% cfg.PipelineDefinition
+    PipelineDefinition {
+        uniqueidentifier PipelineID PK "NOT NULL"
+        bigint DomainID FK "NOT NULL"
+        nvarchar(128) PipelineName "NOT NULL"
+        varchar(16) InputLayer "NOT NULL"
+        varchar(16) OutputLayer "NOT NULL"
+        varchar(8) LoggingLevel "NULL"
+        bit ProfileTransformations "NULL"
+        nvarchar(max) ProfilingOptionsJson "NULL"
+        nvarchar(max) ExecutionPolicyJson "NOT NULL"
+        bit IsActive "NOT NULL"
+        datetime2(7) CreatedAtUtc "NOT NULL"
+        datetime2(7) ModifiedAtUtc "NOT NULL"
+        bigint ConfigRevision "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% cfg.PipelineObject
+    PipelineObject {
+        bigint PipelineObjectID PK "NOT NULL"
+        uniqueidentifier PipelineID FK "NOT NULL"
+        bigint SourceObjectID FK "NOT NULL"
+        nvarchar(256) InputLocationRef "NOT NULL"
+        nvarchar(256) TargetLakehouseRef "NOT NULL"
+        nvarchar(128) TargetSchema "NOT NULL"
+        nvarchar(128) TargetTable "NOT NULL"
+        varchar(24) LoadStrategy "NOT NULL"
+        int WatermarkOverlapSeconds "NOT NULL"
+        varchar(24) DeletePolicy "NOT NULL"
+        nvarchar(max) ColumnMappingJson "NULL"
+        nvarchar(max) PolicyOverridesJson "NULL"
+        bit IsActive "NOT NULL"
+        datetime2(7) CreatedAtUtc "NOT NULL"
+        datetime2(7) ModifiedAtUtc "NOT NULL"
+        bigint ConfigRevision "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% cfg.TransformationStep
+    TransformationStep {
+        bigint TransformationStepID PK "NOT NULL"
+        bigint PipelineObjectID FK "NOT NULL"
+        int StepOrdinal "NOT NULL"
+        nvarchar(128) RegistryFunctionName "NOT NULL"
+        nvarchar(max) ParametersJson "NOT NULL"
+        nvarchar(max) ReferenceInputsJson "NULL"
+        bit IsActive "NOT NULL"
+        datetime2(7) CreatedAtUtc "NOT NULL"
+        datetime2(7) ModifiedAtUtc "NOT NULL"
+        bigint ConfigRevision "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% ops.IngestionRun
+    IngestionRun {
+        uniqueidentifier RunID PK "NOT NULL"
+        uniqueidentifier PipelineID FK "NOT NULL"
+        varchar(16) RunType "NOT NULL"
+        varchar(24) Status "NOT NULL"
+        datetime2(7) StartedAtUtc "NULL"
+        datetime2(7) EndedAtUtc "NULL"
+        nvarchar(max) ConfigurationSnapshotJson "NOT NULL"
+        binary(32) ConfigurationHash "NOT NULL"
+        nvarchar(128) CodeRevision "NOT NULL"
+        nvarchar(max) ExecutionContextJson "NOT NULL"
+        datetime2(7) LastHeartbeatAtUtc "NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% ops.IngestionTableRun
+    IngestionTableRun {
+        uniqueidentifier TableRunID PK "NOT NULL"
+        uniqueidentifier RunID FK "NOT NULL"
+        bigint PipelineObjectID FK "NOT NULL"
+        int AttemptNumber "NOT NULL"
+        varchar(24) Status "NOT NULL"
+        datetime2(7) StartedAtUtc "NULL"
+        datetime2(7) EndedAtUtc "NULL"
+        datetime2(7) WindowStartUtc "NULL"
+        datetime2(7) WindowEndUtc "NULL"
+        nvarchar(256) SourceCheckpointRef "NULL"
+        nvarchar(2048) StagingRef "NULL"
+        bigint TargetVersion "NULL"
+        varchar(32) LastCompletedPhase "NULL"
+        nvarchar(max) RowCountsJson "NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% ops.IngestionWatermark
+    IngestionWatermark {
+        bigint PipelineObjectID PK, FK "NOT NULL"
+        datetime2(7) CommittedWatermarkUtc "NULL"
+        uniqueidentifier LastSuccessfulTableRunID FK "NULL"
+        uniqueidentifier LeaseOwnerRunID FK "NULL"
+        datetime2(7) LeaseExpiresAtUtc "NULL"
+        bigint FencingToken "NOT NULL"
+        datetime2(7) ModifiedAtUtc "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% ops.IngestionError
+    IngestionError {
+        uniqueidentifier ErrorID PK "NOT NULL"
+        uniqueidentifier RunID FK "NOT NULL"
+        uniqueidentifier TableRunID FK "NULL"
+        uniqueidentifier StepExecutionID FK "NULL"
+        datetime2(7) OccurredAtUtc "NOT NULL"
+        varchar(32) FailurePhase "NOT NULL"
+        nvarchar(128) ErrorCode "NOT NULL"
+        nvarchar(2048) Message "NOT NULL"
+        bit IsRetryable "NOT NULL"
+        nvarchar(2048) EvidenceRef "NULL"
+    }
+
+    %% ops.SchemaChangeLog
+    SchemaChangeLog {
+        uniqueidentifier SchemaChangeID PK "NOT NULL"
+        uniqueidentifier RunID FK "NOT NULL"
+        uniqueidentifier TableRunID FK "NOT NULL"
+        datetime2(7) DetectedAtUtc "NOT NULL"
+        nvarchar(max) ExpectedSchemaJson "NOT NULL"
+        nvarchar(max) ObservedSchemaJson "NOT NULL"
+        nvarchar(max) ChangeSummaryJson "NOT NULL"
+        varchar(24) Disposition "NOT NULL"
+    }
+
+    %% ops.ReconciliationResult
+    ReconciliationResult {
+        uniqueidentifier ReconciliationID PK "NOT NULL"
+        uniqueidentifier RunID FK "NOT NULL"
+        uniqueidentifier TableRunID FK "NOT NULL"
+        nvarchar(128) CheckName "NOT NULL"
+        nvarchar(max) ScopeJson "NOT NULL"
+        decimal ExpectedValue "NULL; SQL decimal(38,6)"
+        decimal ActualValue "NULL; SQL decimal(38,6)"
+        varchar(16) Status "NOT NULL"
+        nvarchar(max) DetailsJson "NULL"
+        datetime2(7) CheckedAtUtc "NOT NULL"
+    }
+
+    %% ops.IngestionTransformationRun
+    IngestionTransformationRun {
+        uniqueidentifier StepExecutionID PK "NOT NULL"
+        uniqueidentifier RunID FK "NOT NULL"
+        uniqueidentifier TableRunID FK "NOT NULL"
+        bigint TransformationStepID FK "NOT NULL"
+        int TrialNumber "NOT NULL"
+        int StepOrdinal "NOT NULL"
+        int AttemptNumber "NOT NULL"
+        bit IsWarmup "NOT NULL"
+        nvarchar(128) FunctionName "NOT NULL"
+        nvarchar(max) ParametersJson "NOT NULL"
+        varchar(24) Status "NOT NULL"
+        datetime2(7) StartedAtUtc "NULL"
+        datetime2(7) EndedAtUtc "NULL"
+        decimal PlanBuildDurationSeconds "NULL; SQL decimal(20,6)"
+        decimal MaterializeDurationSeconds "NULL; SQL decimal(20,6)"
+        decimal StepElapsedSeconds "NULL; SQL decimal(20,6)"
+        nvarchar(max) SnapshotContextJson "NOT NULL"
+        nvarchar(max) ComputeContextJson "NOT NULL"
+        nvarchar(max) ExecutionMetricsJson "NULL"
+        varchar(16) CollectionStatus "NOT NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% ops.SparkApplicationRunMetric
+    SparkApplicationRunMetric {
+        uniqueidentifier SparkMetricID PK "NOT NULL"
+        uniqueidentifier RunID FK "NOT NULL"
+        uniqueidentifier TableRunID FK "NULL"
+        nvarchar(128) ActivityRunID "NOT NULL"
+        uniqueidentifier WorkspaceID "NOT NULL"
+        uniqueidentifier SessionOwnerItemID "NOT NULL"
+        varchar(32) SessionOwnerItemType "NOT NULL"
+        nvarchar(128) LivySessionID "NOT NULL"
+        nvarchar(128) ApplicationID "NOT NULL"
+        nvarchar(64) ApplicationAttemptID "NOT NULL"
+        varchar(32) ApplicationStatus "NOT NULL"
+        datetime2(7) StartedAtUtc "NULL"
+        datetime2(7) EndedAtUtc "NULL"
+        datetime2(7) CollectedAtUtc "NULL"
+        varchar(16) CollectionStatus "NOT NULL"
+        nvarchar(max) SourceMappingJson "NOT NULL"
+        nvarchar(max) ExecutionEvidenceJson "NULL"
+        bigint ShuffleWriteRecords "NULL"
+        int AllocatedExecutorsMin "NULL"
+        int AllocatedExecutorsMax "NULL"
+        bit IsAnomalous "NULL"
+        decimal ExpectedDuration "NULL; SQL decimal(20,6)"
+        nvarchar(max) PotentialCausesJson "NULL"
+        decimal TotalDuration "NULL; SQL decimal(20,6)"
+        bigint JobCount "NULL"
+        bigint QueryCount "NULL"
+        bigint TaskCount "NULL"
+        bigint ReadRows "NULL"
+        bigint WriteRows "NULL"
+        bigint JoinCount "NULL"
+        bigint ScanCount "NULL"
+        bigint FilterCount "NULL"
+        bigint UnionCount "NULL"
+        bigint CollectCount "NULL"
+        bigint HashAggregateCount "NULL"
+        bigint ExchangeCount "NULL"
+        bigint ShuffleReadLocalBytes "NULL"
+        bigint ShuffleReadRemoteBytes "NULL"
+        bigint ShuffleWriteBytes "NULL"
+        bigint ReadBytes "NULL"
+        bigint WriteBytes "NULL"
+        bigint MemorySpilledBytes "NULL"
+        bigint DiskSpilledBytes "NULL"
+        decimal GCTime "NULL; SQL decimal(20,6)"
+        bigint StageCount "NULL"
+        bigint ShuffleMapStageCount "NULL"
+        bigint ResultStageCount "NULL"
+        decimal CompilationTime "NULL; SQL decimal(20,6)"
+        decimal ExecutionTime "NULL; SQL decimal(20,6)"
+        decimal IdleTime "NULL; SQL decimal(20,6)"
+        decimal CoreAllocation "NULL; SQL decimal(18,4)"
+        decimal UtilizationPercentage "NULL; SQL decimal(9,4)"
+        decimal TaskDuration "NULL; SQL decimal(20,6)"
+        decimal ShuffleTime "NULL; SQL decimal(20,6)"
+        decimal IOTime "NULL; SQL decimal(20,6)"
+        decimal CPUTime "NULL; SQL decimal(20,6)"
+        decimal ShuffleReadTime "NULL; SQL decimal(20,6)"
+        decimal ShuffleWriteTime "NULL; SQL decimal(20,6)"
+        decimal ReadTime "NULL; SQL decimal(20,6)"
+        decimal WriteTime "NULL; SQL decimal(20,6)"
+        decimal SerializationTime "NULL; SQL decimal(20,6)"
+        decimal DeserializeTime "NULL; SQL decimal(20,6)"
+        decimal ExecutorComputingTime "NULL; SQL decimal(20,6)"
+        decimal ApplicationRunTime "NULL; SQL decimal(20,6)"
+        decimal OverheadTime "NULL; SQL decimal(20,6)"
+        decimal QueueingTime "NULL; SQL decimal(20,6)"
+        decimal StartingTime "NULL; SQL decimal(20,6)"
+    }
+
+    %% ops.DiagnosticCollection
+    DiagnosticCollection {
+        uniqueidentifier CollectionID PK "NOT NULL"
+        uniqueidentifier RunID FK "NOT NULL"
+        uniqueidentifier SparkMetricID FK "NULL"
+        nvarchar(256) ScopeKey "NOT NULL"
+        varchar(16) Status "NOT NULL"
+        int AttemptCount "NOT NULL"
+        datetime2(7) RequestedAtUtc "NOT NULL"
+        datetime2(7) NextAttemptAtUtc "NULL"
+        datetime2(7) CompletedAtUtc "NULL"
+        nvarchar(2048) UnavailableReason "NULL"
+        rowversion RowVersion "NOT NULL"
+    }
+
+    %% ops.DiagnosticArtifact
+    DiagnosticArtifact {
+        uniqueidentifier ArtifactID PK "NOT NULL"
+        uniqueidentifier CollectionID FK "NOT NULL"
+        varchar(32) ArtifactType "NOT NULL"
+        nvarchar(512) SourceIdentity "NOT NULL"
+        datetime2(7) SourceModifiedAtUtc "NULL"
+        datetime2(7) CollectedAtUtc "NOT NULL"
+        bigint ByteCount "NULL"
+        binary(32) Sha256 "NULL"
+        bit IsComplete "NOT NULL"
+        nvarchar(max) RetrievalContextJson "NOT NULL"
+        nvarchar(2048) StorageRef "NOT NULL"
+        bit IsSanitizedCopy "NOT NULL"
+        datetime2(7) ExpiresAtUtc "NULL"
+    }
+
+    %% ops.AlertEvent
+    AlertEvent {
+        uniqueidentifier AlertEventID PK "NOT NULL"
+        uniqueidentifier PipelineID FK "NULL"
+        uniqueidentifier RunID FK "NULL"
+        uniqueidentifier TableRunID FK "NULL"
+        uniqueidentifier SparkMetricID FK "NULL"
+        nvarchar(256) ProviderAlertID "NOT NULL"
+        nvarchar(128) RuleName "NOT NULL"
+        varchar(16) Severity "NOT NULL"
+        varchar(24) Status "NOT NULL"
+        datetime2(7) OccurredAtUtc "NOT NULL"
+        nvarchar(max) DeliveryContextJson "NOT NULL"
+        nvarchar(max) EvidenceJson "NULL"
+        datetime2(7) AcknowledgedAtUtc "NULL"
+        datetime2(7) ResolvedAtUtc "NULL"
+    }
+
+    ProcessingDomain ||..o{ PipelineDefinition : DomainID
+    SourceSystem ||..o{ SourceObject : SourceSystemID
+    PipelineDefinition ||..o{ PipelineObject : PipelineID
+    SourceObject ||..o{ PipelineObject : SourceObjectID
+    PipelineObject ||..o{ TransformationStep : PipelineObjectID
+    PipelineDefinition ||..o{ IngestionRun : PipelineID
+    IngestionRun ||..o{ IngestionTableRun : RunID
+    PipelineObject ||..o{ IngestionTableRun : PipelineObjectID
+    PipelineObject ||..o| IngestionWatermark : PipelineObjectID
+    IngestionTableRun |o..o{ IngestionWatermark : LastSuccessfulTableRunID
+    IngestionRun |o..o{ IngestionWatermark : LeaseOwnerRunID
+    IngestionRun ||..o{ IngestionError : RunID
+    IngestionTableRun |o..o{ IngestionError : TableRunID
+    IngestionTransformationRun |o..o{ IngestionError : StepExecutionID
+    IngestionRun ||..o{ SchemaChangeLog : RunID
+    IngestionTableRun ||..o{ SchemaChangeLog : TableRunID
+    IngestionRun ||..o{ ReconciliationResult : RunID
+    IngestionTableRun ||..o{ ReconciliationResult : TableRunID
+    IngestionRun ||..o{ IngestionTransformationRun : RunID
+    IngestionTableRun ||..o{ IngestionTransformationRun : TableRunID
+    TransformationStep ||..o{ IngestionTransformationRun : TransformationStepID
+    IngestionRun ||..o{ SparkApplicationRunMetric : RunID
+    IngestionTableRun |o..o{ SparkApplicationRunMetric : TableRunID
+    IngestionRun ||..o{ DiagnosticCollection : RunID
+    SparkApplicationRunMetric |o..o{ DiagnosticCollection : SparkMetricID
+    DiagnosticCollection ||..o{ DiagnosticArtifact : CollectionID
+    PipelineDefinition |o..o{ AlertEvent : PipelineID
+    IngestionRun |o..o{ AlertEvent : RunID
+    IngestionTableRun |o..o{ AlertEvent : TableRunID
+    SparkApplicationRunMetric |o..o{ AlertEvent : SparkMetricID

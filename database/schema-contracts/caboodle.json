@@ -1,0 +1,1753 @@
+{
+  "schema_version": 1,
+  "source_system": "Caboodle",
+  "schema": "dbo",
+  "tables": [
+    {
+      "name": "DimPatient",
+      "primary_key": [
+        "PatientKey"
+      ],
+      "columns": [
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for a patient version."
+        },
+        {
+          "name": "SourcePatientID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `Clarity.dbo.Patient.PatientID`."
+        },
+        {
+          "name": "MedicalRecordNumber",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Patient business identifier."
+        },
+        {
+          "name": "FirstName",
+          "sql_type": "nvarchar(100)",
+          "nullable": false,
+          "purpose": "Synthetic given name."
+        },
+        {
+          "name": "LastName",
+          "sql_type": "nvarchar(100)",
+          "nullable": false,
+          "purpose": "Synthetic family name."
+        },
+        {
+          "name": "BirthDate",
+          "sql_type": "date",
+          "nullable": false,
+          "purpose": "Supports age-at-event calculations; do not persist a continually changing current age."
+        },
+        {
+          "name": "AdministrativeSexCode",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Administrative demographic classification."
+        },
+        {
+          "name": "City",
+          "sql_type": "nvarchar(100)",
+          "nullable": true,
+          "purpose": "Patient city for this version."
+        },
+        {
+          "name": "StateCode",
+          "sql_type": "varchar(10)",
+          "nullable": true,
+          "purpose": "Patient state or region for this version."
+        },
+        {
+          "name": "PostalCode",
+          "sql_type": "varchar(20)",
+          "nullable": true,
+          "purpose": "Patient postal identifier for this version."
+        },
+        {
+          "name": "DeathDate",
+          "sql_type": "date",
+          "nullable": true,
+          "purpose": "Date of death when known."
+        },
+        {
+          "name": "PatientStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Patient lifecycle status for this version."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        },
+        {
+          "name": "EffectiveFromUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Inclusive beginning of this Type 2 dimension version."
+        },
+        {
+          "name": "EffectiveToUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Exclusive end of this version; null for the current version."
+        },
+        {
+          "name": "IsCurrent",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Identifies the current version for the source business key."
+        }
+      ]
+    },
+    {
+      "name": "DimProvider",
+      "primary_key": [
+        "ProviderKey"
+      ],
+      "columns": [
+        {
+          "name": "ProviderKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for a provider version."
+        },
+        {
+          "name": "SourceProviderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `Provider.ProviderID`."
+        },
+        {
+          "name": "ProviderCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Stable provider business identifier."
+        },
+        {
+          "name": "DisplayName",
+          "sql_type": "nvarchar(200)",
+          "nullable": false,
+          "purpose": "Provider display name for this version."
+        },
+        {
+          "name": "ProviderTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Provider role/category for this version."
+        },
+        {
+          "name": "SpecialtyCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Specialty for this version."
+        },
+        {
+          "name": "IsActive",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Active status for this version."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        },
+        {
+          "name": "EffectiveFromUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Inclusive beginning of this Type 2 dimension version."
+        },
+        {
+          "name": "EffectiveToUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Exclusive end of this version; null for the current version."
+        },
+        {
+          "name": "IsCurrent",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Identifies the current version for the source business key."
+        }
+      ]
+    },
+    {
+      "name": "DimDepartment",
+      "primary_key": [
+        "DepartmentKey"
+      ],
+      "columns": [
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for a department version."
+        },
+        {
+          "name": "SourceDepartmentID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `Department.DepartmentID`."
+        },
+        {
+          "name": "DepartmentCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Stable department business code."
+        },
+        {
+          "name": "DepartmentName",
+          "sql_type": "nvarchar(150)",
+          "nullable": false,
+          "purpose": "Department name for this version."
+        },
+        {
+          "name": "FacilityCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Owning facility for this version."
+        },
+        {
+          "name": "DepartmentTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Department classification for this version."
+        },
+        {
+          "name": "IsActive",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Active status for this version."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        },
+        {
+          "name": "EffectiveFromUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Inclusive beginning of this Type 2 dimension version."
+        },
+        {
+          "name": "EffectiveToUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Exclusive end of this version; null for the current version."
+        },
+        {
+          "name": "IsCurrent",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Identifies the current version for the source business key."
+        }
+      ]
+    },
+    {
+      "name": "DimDate",
+      "primary_key": [
+        "DateKey"
+      ],
+      "columns": [
+        {
+          "name": "DateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "PK; calendar date encoded as `YYYYMMDD`."
+        },
+        {
+          "name": "CalendarDate",
+          "sql_type": "date",
+          "nullable": false,
+          "purpose": "UQ; actual date value."
+        },
+        {
+          "name": "CalendarYear",
+          "sql_type": "smallint",
+          "nullable": false,
+          "purpose": "Four-digit calendar year."
+        },
+        {
+          "name": "CalendarQuarter",
+          "sql_type": "tinyint",
+          "nullable": false,
+          "purpose": "Quarter number, 1-4."
+        },
+        {
+          "name": "MonthNumber",
+          "sql_type": "tinyint",
+          "nullable": false,
+          "purpose": "Month number, 1-12."
+        },
+        {
+          "name": "MonthName",
+          "sql_type": "nvarchar(10)",
+          "nullable": false,
+          "purpose": "Month display label."
+        },
+        {
+          "name": "DayOfMonth",
+          "sql_type": "tinyint",
+          "nullable": false,
+          "purpose": "Day number within the month."
+        },
+        {
+          "name": "IsoDayOfWeek",
+          "sql_type": "tinyint",
+          "nullable": false,
+          "purpose": "Monday = 1 through Sunday = 7; independent of SQL session settings."
+        },
+        {
+          "name": "IsWeekend",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Saturday/Sunday indicator."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        }
+      ]
+    },
+    {
+      "name": "DimDiagnosis",
+      "primary_key": [
+        "DiagnosisKey"
+      ],
+      "columns": [
+        {
+          "name": "DiagnosisKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the diagnosis code."
+        },
+        {
+          "name": "DiagnosisCodeSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Code namespace from `Diagnosis`."
+        },
+        {
+          "name": "DiagnosisCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business code from `Diagnosis`; not a diagnosis assignment ID."
+        },
+        {
+          "name": "DiagnosisDescription",
+          "sql_type": "nvarchar(250)",
+          "nullable": false,
+          "purpose": "Standardized synthetic label for the code."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "DimProcedure",
+      "primary_key": [
+        "ProcedureKey"
+      ],
+      "columns": [
+        {
+          "name": "ProcedureKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the procedure code."
+        },
+        {
+          "name": "ProcedureCodeSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Code namespace from `[Procedure]`."
+        },
+        {
+          "name": "ProcedureCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business code from `[Procedure]`; not a procedure event ID."
+        },
+        {
+          "name": "ProcedureDescription",
+          "sql_type": "nvarchar(250)",
+          "nullable": false,
+          "purpose": "Standardized synthetic procedure label."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "DimMedication",
+      "primary_key": [
+        "MedicationKey"
+      ],
+      "columns": [
+        {
+          "name": "MedicationKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the medication product."
+        },
+        {
+          "name": "MedicationCodeSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Medication code namespace from `MedicationOrder`."
+        },
+        {
+          "name": "MedicationCode",
+          "sql_type": "varchar(50)",
+          "nullable": false,
+          "purpose": "Product identifier; not an order identifier."
+        },
+        {
+          "name": "MedicationName",
+          "sql_type": "nvarchar(200)",
+          "nullable": false,
+          "purpose": "Standardized synthetic medication name."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "DimCoverage",
+      "primary_key": [
+        "CoverageKey"
+      ],
+      "columns": [
+        {
+          "name": "CoverageKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for a coverage version."
+        },
+        {
+          "name": "SourceCoverageID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `Coverage.CoverageID`."
+        },
+        {
+          "name": "SourcePatientID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to the enrolled patient; not a FK to a versioned patient dimension."
+        },
+        {
+          "name": "CoverageNumber",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Enrollment business identifier."
+        },
+        {
+          "name": "PayerCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Synthetic payer identifier."
+        },
+        {
+          "name": "PayerName",
+          "sql_type": "nvarchar(150)",
+          "nullable": false,
+          "purpose": "Payer display name for this version."
+        },
+        {
+          "name": "PlanCode",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Plan code within the payer."
+        },
+        {
+          "name": "PlanName",
+          "sql_type": "nvarchar(150)",
+          "nullable": false,
+          "purpose": "Plan label for this version."
+        },
+        {
+          "name": "CoverageTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Insurance category for this version."
+        },
+        {
+          "name": "EffectiveDate",
+          "sql_type": "date",
+          "nullable": false,
+          "purpose": "Coverage period start; distinct from dimension-version validity."
+        },
+        {
+          "name": "TerminationDate",
+          "sql_type": "date",
+          "nullable": true,
+          "purpose": "Inclusive coverage period end."
+        },
+        {
+          "name": "CoverageStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Enrollment lifecycle status for this version."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        },
+        {
+          "name": "EffectiveFromUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Inclusive beginning of this Type 2 dimension version."
+        },
+        {
+          "name": "EffectiveToUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Exclusive end of this version; null for the current version."
+        },
+        {
+          "name": "IsCurrent",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Identifies the current version for the source business key."
+        }
+      ]
+    },
+    {
+      "name": "FactEncounter",
+      "primary_key": [
+        "EncounterKey"
+      ],
+      "columns": [
+        {
+          "name": "EncounterKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the encounter fact."
+        },
+        {
+          "name": "SourceEncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `Encounter.EncounterID`; replay matching identifier."
+        },
+        {
+          "name": "EncounterNumber",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Source visit/admission business identifier."
+        },
+        {
+          "name": "AttendingProviderKey",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `DimProvider.ProviderKey`; attending role."
+        },
+        {
+          "name": "CoverageKey",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `DimCoverage.CoverageKey`; assigned primary enrollment version at arrival."
+        },
+        {
+          "name": "ArrivalDateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "FK to `DimDate.DateKey` for arrival."
+        },
+        {
+          "name": "DischargeDateKey",
+          "sql_type": "int",
+          "nullable": true,
+          "purpose": "FK to `DimDate.DateKey`; absent for open encounters."
+        },
+        {
+          "name": "ArrivalAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Encounter start timestamp."
+        },
+        {
+          "name": "DischargeAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Encounter end timestamp."
+        },
+        {
+          "name": "EncounterTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Visit classification."
+        },
+        {
+          "name": "EncounterStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Current encounter status."
+        },
+        {
+          "name": "DischargeDispositionCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Discharge classification."
+        },
+        {
+          "name": "LengthOfStayMinutes",
+          "sql_type": "decimal(18,2)",
+          "nullable": true,
+          "purpose": "Derived elapsed duration; null until discharge."
+        },
+        {
+          "name": "EncounterCount",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "Constant `1` at this grain; filter deleted/canceled rows as required by the metric."
+        },
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimPatient.PatientKey`."
+        },
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimDepartment.DepartmentKey`."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "FactDiagnosis",
+      "primary_key": [
+        "DiagnosisFactKey"
+      ],
+      "columns": [
+        {
+          "name": "DiagnosisFactKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the assignment fact."
+        },
+        {
+          "name": "SourceDiagnosisID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `Diagnosis.DiagnosisID`; replay matching identifier."
+        },
+        {
+          "name": "SourceEncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Source encounter identifier for lineage; not a FK to another fact."
+        },
+        {
+          "name": "DiagnosisKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `DimDiagnosis.DiagnosisKey`."
+        },
+        {
+          "name": "DiagnosingProviderKey",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `DimProvider.ProviderKey`."
+        },
+        {
+          "name": "DiagnosisDateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "FK to `DimDate.DateKey`."
+        },
+        {
+          "name": "DiagnosedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Assignment event time."
+        },
+        {
+          "name": "DiagnosisSequence",
+          "sql_type": "smallint",
+          "nullable": false,
+          "purpose": "Source encounter ordering."
+        },
+        {
+          "name": "IsPrimary",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Source primary-assignment flag."
+        },
+        {
+          "name": "DiagnosisStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Assignment lifecycle status."
+        },
+        {
+          "name": "DiagnosisCount",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "Constant `1` per assignment."
+        },
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimPatient.PatientKey`."
+        },
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimDepartment.DepartmentKey`."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "FactProcedure",
+      "primary_key": [
+        "ProcedureFactKey"
+      ],
+      "columns": [
+        {
+          "name": "ProcedureFactKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the procedure event."
+        },
+        {
+          "name": "SourceProcedureID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `[Procedure].ProcedureID`."
+        },
+        {
+          "name": "SourceEncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Source encounter identifier for lineage; not a FK to another fact."
+        },
+        {
+          "name": "ProcedureKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `DimProcedure.ProcedureKey`."
+        },
+        {
+          "name": "PerformingProviderKey",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `DimProvider.ProviderKey`."
+        },
+        {
+          "name": "OrderedDateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "FK to `DimDate.DateKey`."
+        },
+        {
+          "name": "PerformedDateKey",
+          "sql_type": "int",
+          "nullable": true,
+          "purpose": "FK to `DimDate.DateKey`; null until performed."
+        },
+        {
+          "name": "OrderedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Procedure order time."
+        },
+        {
+          "name": "PerformedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Actual procedure time."
+        },
+        {
+          "name": "ProcedureStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Event lifecycle status."
+        },
+        {
+          "name": "ProcedureCount",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "Constant `1` per procedure event; completed counts require a status filter."
+        },
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimPatient.PatientKey`."
+        },
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimDepartment.DepartmentKey`."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "FactMedicationOrder",
+      "primary_key": [
+        "MedicationOrderKey"
+      ],
+      "columns": [
+        {
+          "name": "MedicationOrderKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the order fact."
+        },
+        {
+          "name": "SourceMedicationOrderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `MedicationOrder.MedicationOrderID`."
+        },
+        {
+          "name": "SourceEncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Source encounter identifier for lineage; not a FK to another fact."
+        },
+        {
+          "name": "MedicationKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `DimMedication.MedicationKey`."
+        },
+        {
+          "name": "OrderingProviderKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `DimProvider.ProviderKey`."
+        },
+        {
+          "name": "OrderedDateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "FK to `DimDate.DateKey`."
+        },
+        {
+          "name": "OrderedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Medication order time."
+        },
+        {
+          "name": "StartAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Intended treatment start."
+        },
+        {
+          "name": "EndAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Intended or actual treatment end."
+        },
+        {
+          "name": "OrderedDose",
+          "sql_type": "decimal(18,4)",
+          "nullable": true,
+          "purpose": "Source structured ordered quantity."
+        },
+        {
+          "name": "DoseUnit",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Quantity unit; retain when analyzing doses."
+        },
+        {
+          "name": "RouteCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Ordered route."
+        },
+        {
+          "name": "FrequencyCode",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Ordered frequency."
+        },
+        {
+          "name": "OrderStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Order lifecycle status."
+        },
+        {
+          "name": "OrderCount",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "Constant `1` per order."
+        },
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimPatient.PatientKey`."
+        },
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimDepartment.DepartmentKey`."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "FactMedicationAdministration",
+      "primary_key": [
+        "MedicationAdministrationKey"
+      ],
+      "columns": [
+        {
+          "name": "MedicationAdministrationKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the administration fact."
+        },
+        {
+          "name": "SourceMedicationAdministrationID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `MedicationAdministration.MedicationAdministrationID`."
+        },
+        {
+          "name": "SourceEncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Source encounter identifier resolved through the medication order."
+        },
+        {
+          "name": "SourceMedicationOrderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Degenerate order identifier for lineage; no fact-to-fact FK."
+        },
+        {
+          "name": "MedicationKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `DimMedication.MedicationKey`, resolved through the source order."
+        },
+        {
+          "name": "AdministeringProviderKey",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `DimProvider.ProviderKey`."
+        },
+        {
+          "name": "AdministrationDateKey",
+          "sql_type": "int",
+          "nullable": true,
+          "purpose": "FK to `DimDate.DateKey` for the actual administration date."
+        },
+        {
+          "name": "RecordedDateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "FK to `DimDate.DateKey` for documentation."
+        },
+        {
+          "name": "ScheduledAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Planned event time."
+        },
+        {
+          "name": "RecordedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Documentation time, including non-administrations."
+        },
+        {
+          "name": "AdministeredAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Actual administration time."
+        },
+        {
+          "name": "AdministeredDose",
+          "sql_type": "decimal(18,4)",
+          "nullable": true,
+          "purpose": "Actual quantity administered."
+        },
+        {
+          "name": "DoseUnit",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Unit for the administered quantity."
+        },
+        {
+          "name": "AdministrationStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Distinguishes given, held, refused, and other outcomes."
+        },
+        {
+          "name": "AdministrationEventCount",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "Constant `1` per documented event, not necessarily a dose given."
+        },
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimPatient.PatientKey`."
+        },
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimDepartment.DepartmentKey`."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "FactLabResult",
+      "primary_key": [
+        "LabResultKey"
+      ],
+      "columns": [
+        {
+          "name": "LabResultKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the result component fact."
+        },
+        {
+          "name": "SourceLaboratoryResultID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `LaboratoryResult.LaboratoryResultID`."
+        },
+        {
+          "name": "SourceEncounterID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Source encounter identifier resolved through the laboratory order."
+        },
+        {
+          "name": "SourceLaboratoryOrderID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Degenerate parent order identifier for lineage."
+        },
+        {
+          "name": "OrderingProviderKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to `DimProvider.ProviderKey`, resolved through the order."
+        },
+        {
+          "name": "OrderedDateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "FK to `DimDate.DateKey` for the parent order."
+        },
+        {
+          "name": "ResultDateKey",
+          "sql_type": "int",
+          "nullable": true,
+          "purpose": "FK to `DimDate.DateKey`; absent for pending results."
+        },
+        {
+          "name": "OrderedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Parent laboratory order time."
+        },
+        {
+          "name": "ResultedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Result event time."
+        },
+        {
+          "name": "TestCode",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Ordered test/panel code from `LaboratoryOrder`."
+        },
+        {
+          "name": "ComponentCode",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Observation component code."
+        },
+        {
+          "name": "ComponentName",
+          "sql_type": "nvarchar(200)",
+          "nullable": false,
+          "purpose": "Component display name."
+        },
+        {
+          "name": "NumericValue",
+          "sql_type": "decimal(18,6)",
+          "nullable": true,
+          "purpose": "Numeric result; not additive across observations."
+        },
+        {
+          "name": "TextValue",
+          "sql_type": "nvarchar(1000)",
+          "nullable": true,
+          "purpose": "Qualitative result or explanation."
+        },
+        {
+          "name": "ResultUnit",
+          "sql_type": "varchar(30)",
+          "nullable": true,
+          "purpose": "Numeric result unit."
+        },
+        {
+          "name": "ReferenceLow",
+          "sql_type": "decimal(18,6)",
+          "nullable": true,
+          "purpose": "Synthetic lower reference bound."
+        },
+        {
+          "name": "ReferenceHigh",
+          "sql_type": "decimal(18,6)",
+          "nullable": true,
+          "purpose": "Synthetic upper reference bound."
+        },
+        {
+          "name": "AbnormalFlag",
+          "sql_type": "varchar(20)",
+          "nullable": true,
+          "purpose": "Source-provided synthetic result classification."
+        },
+        {
+          "name": "ResultStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Result lifecycle status."
+        },
+        {
+          "name": "ResultCount",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "Constant `1` per component; final-result reporting requires a status filter."
+        },
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimPatient.PatientKey`."
+        },
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimDepartment.DepartmentKey`."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    },
+    {
+      "name": "FactAppointment",
+      "primary_key": [
+        "AppointmentKey"
+      ],
+      "columns": [
+        {
+          "name": "AppointmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Surrogate PK for the appointment fact."
+        },
+        {
+          "name": "SourceAppointmentID",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "Lineage to `Appointment.AppointmentID`."
+        },
+        {
+          "name": "SourceEncounterID",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "Linked source encounter identifier, if any; not a FK to another fact."
+        },
+        {
+          "name": "AppointmentNumber",
+          "sql_type": "varchar(40)",
+          "nullable": false,
+          "purpose": "Scheduling business identifier."
+        },
+        {
+          "name": "ProviderKey",
+          "sql_type": "bigint",
+          "nullable": true,
+          "purpose": "FK to `DimProvider.ProviderKey`; scheduled provider."
+        },
+        {
+          "name": "ScheduledDateKey",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "FK to `DimDate.DateKey`."
+        },
+        {
+          "name": "ScheduledStartAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Scheduled start."
+        },
+        {
+          "name": "ScheduledEndAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Scheduled end."
+        },
+        {
+          "name": "AppointmentTypeCode",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Scheduling category."
+        },
+        {
+          "name": "AppointmentStatus",
+          "sql_type": "varchar(20)",
+          "nullable": false,
+          "purpose": "Includes canceled visits and no-shows."
+        },
+        {
+          "name": "CanceledAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": true,
+          "purpose": "Cancellation event time."
+        },
+        {
+          "name": "ScheduledDurationMinutes",
+          "sql_type": "decimal(18,2)",
+          "nullable": false,
+          "purpose": "Derived scheduled duration."
+        },
+        {
+          "name": "AppointmentCount",
+          "sql_type": "int",
+          "nullable": false,
+          "purpose": "Constant `1` per appointment."
+        },
+        {
+          "name": "PatientKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimPatient.PatientKey`."
+        },
+        {
+          "name": "DepartmentKey",
+          "sql_type": "bigint",
+          "nullable": false,
+          "purpose": "FK to the event-time version of `DimDepartment.DepartmentKey`."
+        },
+        {
+          "name": "EtlCreatedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Timestamp when the row was first published to Caboodle."
+        },
+        {
+          "name": "EtlModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Updated on every Caboodle row change, including SCD expiration and delete propagation; proposed Fabric extraction watermark."
+        },
+        {
+          "name": "EtlBatchID",
+          "sql_type": "uniqueidentifier",
+          "nullable": false,
+          "purpose": "Identifier of the simulated transformation batch that last changed the row."
+        },
+        {
+          "name": "OriginSystem",
+          "sql_type": "varchar(30)",
+          "nullable": false,
+          "purpose": "Business lineage system; initially `Clarity`. This is distinct from ingestion metadata `SourceSystem = Caboodle`."
+        },
+        {
+          "name": "OriginModifiedAtUtc",
+          "sql_type": "datetime2(7)",
+          "nullable": false,
+          "purpose": "Latest contributing source modification timestamp; for lineage, not the Caboodle extraction watermark."
+        },
+        {
+          "name": "IsDeleted",
+          "sql_type": "bit",
+          "nullable": false,
+          "purpose": "Indicates a deleted source event/entity or retired catalog member without physically removing history."
+        }
+      ]
+    }
+  ]
+}

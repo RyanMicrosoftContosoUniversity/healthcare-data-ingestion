@@ -1,0 +1,62 @@
+---
+title: Framework - Configuration
+config:
+  theme: neutral
+---
+%% PROPOSED FOR REVIEW. No framework tables have been deployed.
+%% Keys and selected review fields only; full definitions are in docs\ingestion\metadata-design.md.
+%% Every declared FK is retained, including references to off-diagram tables.
+%% Common configuration audit/revision columns and metric columns are omitted.
+erDiagram
+    direction LR
+    ProcessingDomain {
+        bigint DomainID PK
+        nvarchar(64) DomainName
+        varchar(8) DefaultLoggingLevel
+        bit DefaultProfileTransformations
+    }
+
+    SourceSystem {
+        smallint SourceSystemID PK
+        varchar(30) SourceSystemName
+        nvarchar(256) ConnectionRef
+    }
+
+    SourceObject {
+        bigint SourceObjectID PK
+        smallint SourceSystemID FK
+        nvarchar(128) SourceSchema
+        nvarchar(128) SourceTable
+        nvarchar(128) WatermarkColumn "NULL"
+    }
+
+    PipelineDefinition {
+        uniqueidentifier PipelineID PK
+        bigint DomainID FK
+        nvarchar(128) PipelineName
+        varchar(16) InputLayer
+        varchar(16) OutputLayer
+        varchar(8) LoggingLevel "NULL"
+    }
+
+    PipelineObject {
+        bigint PipelineObjectID PK
+        uniqueidentifier PipelineID FK
+        bigint SourceObjectID FK
+        nvarchar(128) TargetSchema
+        nvarchar(128) TargetTable
+        varchar(24) LoadStrategy
+    }
+
+    TransformationStep {
+        bigint TransformationStepID PK
+        bigint PipelineObjectID FK
+        int StepOrdinal
+        nvarchar(128) RegistryFunctionName
+    }
+
+    SourceSystem ||..o{ SourceObject : SourceSystemID
+    ProcessingDomain ||..o{ PipelineDefinition : DomainID
+    PipelineDefinition ||..o{ PipelineObject : PipelineID
+    SourceObject ||..o{ PipelineObject : SourceObjectID
+    PipelineObject ||..o{ TransformationStep : PipelineObjectID
