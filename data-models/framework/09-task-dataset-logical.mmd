@@ -1,0 +1,27 @@
+flowchart LR
+    NOTE["APPROVED LOGICAL DIRECTION ONLY<br/>Not physical SQL columns, FK cardinalities, final table count or a migration"]
+    PIPE["cfg.PipelineDefinition<br/>Shared stage settings and default policy<br/>Remove baseline InputLayer and OutputLayer"]
+    MAP["cfg.PipelineObject<br/>Retained source-to-target mapping"]
+    TASK["cfg.ProcessingTask<br/>One independently executable task<br/>Primary output, lineage, logical resources, overrides<br/>One ordered JSON function array"]
+    DATA["cfg.Dataset<br/>Logical Bronze / Silver 1 / Silver 2 / Gold identity<br/>Default freshness; stable across dev/QA/prod<br/>Gold remains outside initial build"]
+    INPUT["cfg.TaskInput<br/>Normalized consumed-dataset edge<br/>Alias, required flag, optional freshness override"]
+    ORDER["cfg.TaskDependency<br/>Exceptional non-inferable ordering only"]
+    HISTORY["Task operation and attempt history<br/>Reuse existing ops tables only where grain fits"]
+    READY["Current dataset readiness role<br/>Committed version, source currency/window<br/>Latest expected outcome, eligibility"]
+    RELEASE["Immutable release / snapshot / activation roles<br/>Exact physical storage and keys pending"]
+    PHYSICAL["Environment-specific physical resource maps<br/>Notebook, environment and compute are distinct refs"]
+    LEGACY["Baseline cfg.TransformationStep<br/>Superseded storage; reconcile auxiliary inputs,<br/>parameters and profiling/history before removal"]
+    PIPE --> TASK
+    MAP -. Optional task mapping reference .-> TASK
+    TASK -->|Primary output| DATA
+    TASK -->|Consumes via| INPUT
+    INPUT -->|References logical identity| DATA
+    ORDER -. Exceptional ordering between tasks .-> TASK
+    TASK --> HISTORY
+    DATA --> READY
+    RELEASE -. Snapshot scopes configuration .-> TASK
+    RELEASE -. Pins attempts .-> HISTORY
+    TASK -. Resolve deployment-specific resources .-> PHYSICAL
+    DATA -. Resolve physical dataset location .-> PHYSICAL
+    LEGACY -. Preserve historical attribution .-> HISTORY
+    NOTE -. Boundary .-> TASK

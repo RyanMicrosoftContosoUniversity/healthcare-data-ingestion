@@ -4,12 +4,14 @@
 deploy them. No source configuration records, control-store migrations, or Bronze
 pipelines should be implemented until this design is approved.
 
-**Discussion reconciliation:** `discussions\discussed-changes.md` approves behaviors,
-not the complete table model. `docs\architecture\orchestration-design.md` records
-independent Bronze/Silver 1, dependency-gated Silver 2, freshness versus availability
-SLA, blocked-task recovery, and generated versioned Airflow releases. The 17 tables
-below remain a baseline with unresolved dependency/readiness/release-state gaps.
-Do not implement migrations until those gaps and runtime decisions have been reviewed.
+**Discussion reconciliation:** `discussions\discussion-02.md` consolidates and extends
+`discussions\discussed-changes.md`. The approved logical revision is specified in
+`docs\ingestion\task-dataset-design.md`; lifecycle behavior is in
+`docs\architecture\orchestration-design.md`. The 17 dictionaries below remain the
+**original baseline**, not a current finalized target schema. Do not implement them
+unchanged: revise task/dataset/input/function-array and operational/release roles,
+then review exact physical definitions. Remaining user decisions are consolidated in
+`docs\architecture\build-decisions.md`.
 
 ## Accepted Decision: Dedicated Fabric Metadata Workspace
 
@@ -48,13 +50,19 @@ and `https://learn.microsoft.com/en-us/fabric/database/sql/sql-analytics-endpoin
 | --- | --- |
 | Control store | Accepted: Fabric SQL Database in a dedicated metadata workspace; no additional Azure SQL control database. |
 | Workspace separation | Accepted: metadata workspace is separate from the data/ingestion workspace. Workspace/database names, existing capacity assignment, and cross-workspace permissions must be confirmed before creation. |
-| Bronze | Accepted: append-only raw Delta observations, retaining source fields, `IsDeleted`, and source audits. Publish each captured batch once; preserve repeated keys/observations across distinct batches. Silver owns latest-state deduplication/merges. The eight technical row columns below are accepted, with a readable source name instead of a source-object ID. Publication/recovery details and retention policies remain under review. |
-| Schema discovery | Required before eligible fresh extraction; one reusable full source-catalog pass is the agreed direction. Exact drift policy, scheduling/concurrency, and any lightweight second live-source recheck remain open. Preserve staged-schema validation and table-level isolation. |
+| Bronze | Accepted: append-only raw Delta observations, retaining source fields, `IsDeleted`, and source audits. Publish each captured batch once; preserve repeated keys/observations across distinct batches. Silver owns latest-state deduplication/merges. The eight technical row columns below are accepted, with a readable source name instead of a source-object ID. November 20 retention approval: retain ingested Fabric data indefinitely, with no automatic age-based purge. This does not imply indefinite temporary staging or Delta historical versions. Publication/recovery details and staging cleanup remain under review. |
+| Schema discovery | Required before eligible fresh extraction. **Strict approved:** all ingestion-relevant contract differences, including nullable additions/widening, block only the affected table pending review/approved revision; no allowlist or auto-evolution. One source pass and staged validation remain; unavailable-evidence/scheduling/concurrency policy and optional lightweight recheck remain open. |
 | Layer dependencies | Approved behavior: independent Bronze and Silver 1; Silver 2 waits for explicit committed, sufficiently fresh upstream datasets. `BLOCKED_BY_DEPENDENCY` is waiting, not a failed transformation. Persistence schemas remain unapproved. |
-| Freshness and SLA | Approved behavior: dataset/consumer freshness gates eligibility; separate availability deadlines drive reporting/alerts, not a late-processing prohibition. Exact policy/time/calendar representation remains open. |
-| Recovery | Approved behavior: reevaluate and dispatch ready blocked work promptly, even after an SLA miss; preserve violation/recovery evidence and idempotent effects. Queue/claim/trigger implementation remains open. |
+| Freshness and SLA | Approved defaults: committed source-coverage age at most 24 elapsed hours, daily start 10:00 AM Eastern local time, required Bronze and initial Patient Silver available by 11:00 AM Eastern local time. Both clock times observe daylight saving; freshness remains elapsed time, not a local calendar day. One-hour feasibility is not yet demonstrated. Per-input overrides remain supported; latest expected failure still blocks despite recent older success. Calendar exceptions, override values and window rules remain open. Deadline breach alerts but does not stop useful late recovery. |
+| Zero-change runs | Successful incremental runs with zero changed records count as successful with verified source-window coverage and normal validation/readiness checks; preserve existing data. Zero rows alone do not prove coverage or justify advancing state. Empty initial/full-load acceptance and exact state protocol remain under review. |
+| Tasks and inputs | Approved logical `ProcessingTask`, `Dataset`, normalized `TaskInput`, and exceptional-only explicit ordering. Retain `PipelineObject` mapping; task mapping FK optional but lineage/output identification mandatory. Physical keys/types still need review. |
+| Function storage | Approved: one ordered JSON function array/configuration column per task, with validated parameters. Reconcile auxiliary inputs, step identity/profiling/history and baseline `TransformationStep` references before retiring it. |
+| Execution settings | Framework/stage defaults and task overrides, generic stage notebooks with justified exceptions, logical notebook/environment/compute refs, separate scheduler/runtime policy and environment/compute sizing. Exact field precedence/resources remain open. |
+| Recovery | Approved: primary readiness events and periodic reconciliation fallback; recheck all dependencies before dispatch. Stable logical operation IDs, distinct attempts, claims and idempotent writes; preserve SLA/recovery evidence. Transport/physical queue/claim protocol remains open. |
 | Orchestration and releases | Fabric SQL is authoritative; generate Airflow DAG artifacts after approved configuration publication, with the same framework/DAG semver and sequential release processing. Preserve last-good active deployment on failure and permit newer queued releases. Manifest/queue/active-pointer schemas are not approved. |
-| Incremental consistency | Begin with committed synthetic-generator epochs: pause source mutations at a known committed checkpoint while establishing/extracting a batch. Watermarks alone do not guarantee capture of arbitrary late commits. |
+| DAG shape and access | Smaller workflow/domain DAGs; metadata evaluates readiness and initiates eligible runs. Airflow reads immutable snapshots; scoped Spark/framework interfaces write ops state, not unrestricted published configuration. |
+| Activation and rollback | Candidate semver before CI; activate only after required tests/deployment/Airflow recognition. New runs use active version; in-flight runs stay pinned. Defined technical failures allow automatic known-good reactivation; data-quality/clinical concerns need operator approval. Rollback does not undo Delta data. |
+| Incremental consistency | Synthea plus mapping configuration is selected for source population through independent SQL loaders. Generation runs well before Fabric ingestion, targeting completion before the 10:00 AM Eastern local time start; do not assume a continuously running generator requiring a pause. Hosting, mapping coverage and population continuity remain under review. Completion/committed-checkpoint evidence must cover SQL loading, not just Synthea exports; unintended-overlap protection and late/failed generation handling need review. Earlier scheduling alone does not establish a safe extraction boundary; watermarks alone do not guarantee capture of arbitrary late commits. |
 | Silver | One row per Clarity `PatientID`; normalize approved text fields, deduplicate deterministically, preserve deletion status, and merge idempotently. Do not collapse Caboodle Type 2 versions into this table. |
 | Benchmarking | Separate, explicitly enabled benchmark invocations using frozen Delta inputs and full-column materialization between functions. No production publishing or watermark advancement. |
 | Deployment | Terraform where supported; documented supported API automation otherwise. No new Fabric capacity. |
@@ -63,7 +71,21 @@ Review the table model, runtime access, Bronze/incremental semantics, and Silver
 contract before approving the remaining framework design. The 28 source-table configuration records come **after**
 this review; only structural examples appear here.
 
-## Table Inventory
+## Baseline Table Inventory and Approved Revision
+
+The approved logical revision retains shared `PipelineDefinition` configuration and
+`PipelineObject` mappings, adds task/dataset/input roles, and replaces normalized
+function-step storage with the ordered task JSON array. Remove `InputLayer`/`OutputLayer`
+from `PipelineDefinition` in that revision, inferring movement through datasets.
+Normalize many-to-many input/dependency edges, derive graph edges from producers when
+unambiguous, and validate cycles, missing inputs, and ambiguous producers.
+
+Keep task-attempt history separate from current readiness. Reuse existing ops tables
+where grain fits; do not assume an ingestion table attempt represents every join or
+general task. Exact revised table count, SQL types/keys, step/history migration,
+release/snapshot relationships and reliable event/state routines are not finalized.
+See `docs\ingestion\task-dataset-design.md` and the separate
+`data-models\framework\09-task-dataset-logical.mmd` / `.svg`.
 
 | Schema | Tables | Responsibility |
 | --- | --- | --- |
@@ -89,11 +111,11 @@ table and all 50 Spark metric extension fields. It preserves all 30 FK relations
 marks nullability, and displays SQL decimal precision/scale in column comments.
 The keys-only overview and table definitions are unchanged.
 
-These ERDs describe the existing baseline only. Proposed release, dependency, readiness,
-policy, and blocked-dispatch roles are assessed in
-`docs\architecture\orchestration-design.md`; no extra physical tables or columns have
-been approved by the discussion. Behavior diagrams `06-orchestration`,
-`07-release-lifecycle`, and `08-transformation-order` are review views, not ER additions.
+These ERDs describe the original baseline only, including superseded layer/step
+proposals. The task/dataset roles and array choice are now approved logically, but
+exact physical tables/columns remain under review. Updated behavior diagrams
+`06-orchestration`, `07-release-lifecycle`, `08-transformation-order`, and the separate
+`09-task-dataset-logical` revision must not be mistaken for migrated physical schemas.
 
 ## Conventions and Invariants
 
@@ -212,6 +234,9 @@ registered schema and quote them; SQL values remain parameters, not string inter
 
 ### cfg.PipelineDefinition
 
+**Baseline only:** remove `InputLayer`/`OutputLayer` in the revision. Keep shared
+pipeline/stage settings/default execution policy with optional task overrides.
+
 | Column | Type | Null | Key / Purpose |
 | --- | --- | --- | --- |
 | `PipelineID` | `uniqueidentifier` | No | PK |
@@ -227,8 +252,10 @@ registered schema and quote them; SQL values remain parameters, not string inter
 
 ### cfg.PipelineObject
 
-Map one registered source object to one pipeline's target. A Silver mapping keeps the
-source identity for lineage but reads its configured Bronze counterpart, not Azure SQL.
+Map one registered source object to one pipeline's target. Retain this mapping role;
+it is not the revised unit of arbitrary executable work. A `ProcessingTask` may omit
+its mapping FK but cannot omit lineage and input/output identification. The baseline
+Silver mapping below is not a requirement to invent a source mapping for every join.
 
 | Column | Type | Null | Key / Purpose |
 | --- | --- | --- | --- |
@@ -251,9 +278,10 @@ release. Do not allow two active mapping owners to write the same target under s
 
 ### cfg.TransformationStep
 
-This remains a proposed normalized step model. The ordered-array preference has not
-resolved normalized rows versus JSON storage. Function order is not the graph of
-upstream dataset dependencies; retain this baseline until that choice is reviewed.
+**Superseded storage proposal, retained for baseline comparison:** the approved target
+is one ordered JSON function array per processing task. Reconcile parameter/auxiliary
+input validation, repeated-step identity, and profiling/history FKs before removing
+this definition; do not implement new normalized step rows as the target model.
 
 | Column | Type | Null | Key / Purpose |
 | --- | --- | --- | --- |
@@ -288,7 +316,9 @@ writes, then validate each evolving DataFrame schema as the plan is composed.
 | `LastHeartbeatAtUtc` | `datetime2(7)` | Yes | Recovery evidence, not proof Spark is terminated |
 | `RowVersion` | `rowversion` | No | Concurrency protection |
 
-Run settings resolve framework defaults -> domain -> pipeline -> explicit run override.
+Baseline run settings resolve framework defaults -> domain -> pipeline -> explicit run
+override. The revision must incorporate approved stage defaults and task overrides and
+finalize field-level precedence/null semantics; the baseline chain is not complete.
 Changing the log level does not suppress required result records.
 Require explicit benchmark invocation for profiling. Reject incompatible
 `RunType`/profiling settings instead of silently turning a scheduled ingestion run
@@ -586,15 +616,16 @@ Create ingestion run and selected table attempts; freeze approved configuration
 | Result | Disposition before source extraction |
 | --- | --- |
 | Approved contract matches | Persist `PASS`; authorize only that table attempt and frozen configuration. |
-| Added/removed column, changed type/length/precision/nullability, or changed key/watermark | Classify and record the difference. Strict blocking is an earlier proposal, not approved tolerance; review allowed/blocked changes and contract promotion before runtime implementation. |
+| Added/removed/renamed column, changed type/length/precision/nullability, or changed key/watermark | Approved Strict policy: persist differences, block the affected table and alert, including nullable additions/type widening. Resume after review/approved contract revision or source correction. Do not copy, append or advance state; unrelated tables continue. |
 | Source query fails, permissions are insufficient, or evidence cannot be persisted | Fail closed; do not copy, append, or advance the affected table's watermark. Record `UNAVAILABLE` where possible and a sanitized error; failure to record evidence cannot authorize ingestion. |
 | Only physical column order differs | Record observation; permit if explicit mappings and all ingestion-significant properties match. |
 
-Exact drift tolerance, including nullable additions and widening, remains open. Do not
-silently promote the earlier strict proposal into an approved runtime policy. Discovery
-cannot approve contracts, edit metadata/DDL, or change the current run's frozen snapshot.
-Review allowed/blocked change classes and promotion before runtime work. Do not retry
-deterministic drift as a transient connection error.
+Strict, table-isolated blocking is approved; there is no compatible-change allowlist.
+Physical column order alone is still non-blocking under explicit name-based projection
+when ingestion-significant properties match. Discovery cannot approve contracts, edit
+metadata/DDL, or change a run's frozen snapshot. Approval/publication mechanics and
+unavailable-evidence handling remain design-review work. Do not retry deterministic
+drift as a transient connection error.
 
 Use the existing 17-table model: write every check to `ops.ReconciliationResult`,
 differences to `ops.SchemaChangeLog`, and failures to `ops.IngestionError` with
@@ -645,8 +676,10 @@ Metadata visibility: `https://learn.microsoft.com/en-us/sql/relational-databases
    target compatibility check above. Block failed/unavailable attempts in either path.
 4. Acquire each eligible mapping's exclusive write lease through an atomic conditional operation;
    verify run type and owner/token before writes and before state commits.
-5. For source loads, establish the committed generator checkpoint and fixed extraction
-   interval. Use parameterized inclusive lower/exclusive upper bounds with approved
+5. For source loads, verify the earlier generation's completion/committed checkpoint
+   under the reviewed D05 protocol and establish the fixed extraction interval. Do not
+   assume generation starts with ingestion or that a generator-pause mechanism is approved.
+   Use parameterized inclusive lower/exclusive upper bounds with approved
    overlap. Use the applicable discovery evidence; keep exact SQL timestamp values
    outside Spark precision-loss paths. Replay saved batches under the schema rules above.
 6. Copy to immutable batch-owned staging, validate its mapped schema, and append the
@@ -669,15 +702,16 @@ proof that timestamp-only extraction is safe for arbitrary external SQL applicat
 CDC/Change Tracking, physical-delete capture, capture of every intermediate source mutation, and
 cross-source patient consolidation require later designs.
 
-### Approved Dependency and Release Behaviors Still Needing Schemas
+### Approved Dependency and Release Behaviors Still Needing Physical Schemas
 
 The protocol above is a proposed ingestion baseline, not a complete Airflow or
 Silver 2 scheduler. See `docs\architecture\orchestration-design.md` for the required
 committed/fresh readiness gates, `BLOCKED_BY_DEPENDENCY` semantics, separate
-availability SLA, automatic late recovery, ordered configuration releases, and failed
-release isolation. Review representation in existing columns/JSON versus new tables
-before adding statuses, dependency edges, freshness policies, dispatch queues, manifests,
-or active-version pointers. Preserve the current Patient-only first Silver scope.
+availability SLA, automatic late recovery, ordered configuration releases, activation
+checks, and incident rollback. Apply the approved logical task/dataset/input/function
+revision while reviewing exact columns/keys, operational reuse, latest-expected-outcome
+and window semantics, event/commit recovery, and active-version audit before migrations.
+Preserve the current Patient-only first Silver scope.
 
 ## Patient Silver Contract Proposed for Approval
 
@@ -712,14 +746,19 @@ or active-version pointers. Preserve the current Patient-only first Silver scope
   Baseline absence and unsupported signals remain explicit.
 - Confirm notification targets, scheduling mechanism, identities, metric/API
   permissions, retention, and spend limits before activation.
+- Future processed-record monitoring uses UCL = historical mean + 2 standard deviations
+  and LCL = historical mean - 2 standard deviations, as selected November 20.
+  Implementation is deferred. Metric grain, comparable samples/lookback, minimum
+  history, standard-deviation calculation, negative-LCL handling and breach response
+  remain to be designed; no automatic failure/readiness gate is approved.
 
 ## Approval Checklist
 
-- The 17 table definitions and runtime integration with the accepted Fabric SQL Database.
+- Revised physical task/dataset/input/function-array and operational/release schemas, reconciled with the original 17-table baseline and accepted Fabric SQL backend; do not approve the baseline unchanged.
 - Configuration hierarchy, constraints, relationships, and recording grains.
-- Append-only Bronze batch publication, separate Bronze/staging retention, and the committed-source checkpoint protocol. The Bronze row-column set above is already accepted.
-- Explicit review of `docs\ingestion\schema-discovery-design.md`: one-pass discovery direction, exact drift/failure policy, optional recheck/DDL consistency, retained evidence, and table-level isolation.
-- Review the readiness/dependency/freshness/SLA and release-state schema gaps in `docs\architecture\orchestration-design.md`; no implicit approval of new tables or status values.
+- Append-only Bronze batch publication, staging retention/cleanup separate from approved indefinite ingested Fabric data retention, and the committed-source checkpoint protocol. The Bronze row-column set above is already accepted. Generator exports/manifests have a separate five-day retention target, subject to confirmed ingestion and unfinished/recovery-run holds; current generator identity/population/checkpoint state remains protected until verified replacement.
+- Explicit review of `docs\ingestion\schema-discovery-design.md`: implement the approved Strict policy and one-pass direction; finalize unavailable-evidence/scheduling/concurrency, optional recheck/DDL consistency, and retained evidence details without reopening tolerance.
+- Review `docs\ingestion\task-dataset-design.md` and the readiness/recovery/release/rollback protocols in `docs\architecture\orchestration-design.md`; logical approval does not finalize columns, keys, or statuses.
 - Lease recovery, retry ownership, and post-target/pre-state replay semantics.
 - Patient Silver schema/deletion/deduplication contract.
 - Benchmark and telemetry isolation, evidence access, and retention.
@@ -728,6 +767,10 @@ After approval: implement migrations/routines and platform resources, then prepa
 and review source configurations for all 28 physical tables before enabling ingestion.
 
 ## Index, Retention, and Access Plan
+
+The index examples below describe the baseline. Revise them for task/dataset/input
+keys, snapshot/release scope, current readiness, event dispatch, and JSON-step
+attribution; do not create an obsolete physical step table to satisfy an old index.
 
 - Configuration PKs and declared unique constraints support direct resolution. Index
   mapping selection by `(PipelineID, IsActive)` and step lookup by

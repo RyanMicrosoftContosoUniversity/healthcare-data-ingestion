@@ -1,20 +1,29 @@
 flowchart TD
     REVIEW["Required human/governance approvals<br/>before authoritative publication"]
-    REVIEW --> PUB["Publish approved Fabric SQL configuration<br/>Complete immutable snapshot and framework semver"]
+    REVIEW --> PUB["Publish approved Fabric SQL configuration<br/>Complete immutable snapshot; candidate semver before CI"]
     PUB --> QUEUE["Automatically enqueue corresponding DAG release<br/>No second manual release approval"]
     QUEUE --> NEXT["Sequential worker selects next approved release<br/>Queue/claim schema and trigger mechanism pending"]
     NEXT --> GEN["Generate from this release's full snapshot and code revision<br/>Framework and DAG artifact share semantic version"]
-    GEN --> CHECK["Technical validation<br/>Cycles, references, registered functions, task definitions"]
+    GEN --> CHECK["Required CI and technical validation<br/>Graph, functions, tasks, datasets, resource maps and artifacts"]
     CHECK --> DEPLOY["Deploy candidate DAG artifact<br/>Artifact/pinning/activation mechanisms pending"]
-    DEPLOY --> ACTIVE["Atomically activate successful release<br/>Published revision is not necessarily active"]
-    ACTIVE --> SUCCESS["Record active version and evidence<br/>Existing runs retain pinned revisions: mechanics need review"]
+    DEPLOY --> RECOGNIZE["Verify Airflow recognition and required deployment health<br/>Recognition failure is not activation"]
+    RECOGNIZE --> ACTIVE["Activate successful immutable release<br/>New runs bind latest active; published does not mean active"]
+    ACTIVE --> SUCCESS["Record active version and evidence<br/>In-flight runs retain original version/configuration"]
     GEN -- Failure --> FAIL["Record failed release and diagnostics; alert<br/>Do not label it successfully deployed"]
     CHECK -- Failure --> FAIL
     DEPLOY -- Failure --> FAIL
-    FAIL --> KEEP["Keep last known good active deployment<br/>Do not automatically roll backward"]
+    RECOGNIZE -- Failure --> FAIL
+    FAIL --> KEEP["Failed candidate keeps last-good active deployment<br/>Do not deploy repaired obsolete versions over newer active ones"]
     KEEP --> NEXT
     SUCCESS --> NEXT
     EXAMPLE["Example only: active 1.1.0; failed 1.1.1; active 1.2.0<br/>Normally fix on latest as 1.2.1, not repaired older 1.1.1"]
     KEEP -. Later queued release may proceed .-> EXAMPLE
-    NOTE["Conceptual lifecycle, not new approved ERD tables<br/>Initial design/environment/infrastructure approvals still apply"]
+    ACTIVE --> HEALTH{"Post-activation incident class?"}
+    HEALTH -- Defined technical health failure --> AUTO["Automatic rollback under approved health rules"]
+    HEALTH -- Suspected data-quality or clinical issue --> OPERATOR["Operator review and approval required"]
+    AUTO --> ROLLBACK["Reactivate immutable last-known-good for NEW runs<br/>Audit transition; no Delta undo or silent in-flight cancellation"]
+    OPERATOR -- Authorized --> ROLLBACK
+    ROLLBACK --> PATCH["Fix forward in a new patch; review and validate normally<br/>Example only: 1.3.0 to known-good 1.2.3, then tested 1.3.1"]
+    PATCH --> REVIEW
+    NOTE["Conceptual lifecycle; exact activation/pinning/rollback mechanisms pending<br/>Initial design/environment/infrastructure approvals still apply"]
     NOTE -. Boundary .-> PUB

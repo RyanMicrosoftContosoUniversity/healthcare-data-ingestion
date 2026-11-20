@@ -1,24 +1,33 @@
 flowchart TD
-    NOTE["Behavior review only: physical dependency/readiness schemas<br/>and trigger/claim mechanisms are not approved"]
+    NOTE["Discussion-02 behavior review<br/>Exact physical schemas, transport and claim mechanisms remain open"]
     START["Scheduled parent workflow"] --> DISC["Reusable source-schema discovery<br/>One full pass per selected table/cycle"]
     DISC --> A{"Table A eligible?"}
     DISC --> B{"Table B eligible?"}
     A -- Yes --> BA["Bronze A<br/>Stage, validate mapped schema, publish captured batch once"]
     B -- Yes --> BB["Bronze B<br/>Stage, validate mapped schema, publish captured batch once"]
-    A -- No --> AB["Record blocked source table and reason<br/>Drift/failure policy still under review"]
+    A -- No --> AB["Record blocked source table and reason<br/>Strict drift approved; failure mechanics still under review"]
     B -- No --> BBLOCK["Record blocked source table and reason<br/>Unrelated Bronze work continues"]
     BA --> S1A["Independent Silver 1 A<br/>Normalize, validate, deduplicate, commit"]
     BB --> S1B["Independent Silver 1 B<br/>Normalize, validate, deduplicate, commit"]
-    S1A --> READY{"All required upstream datasets committed<br/>with compatible versions and required freshness/coverage?"}
-    S1B --> READY
+    S1A --> STATE["Record committed dataset version and source currency/window<br/>Keep task attempts separate from current readiness"]
+    S1B --> STATE
+    AB --> FAILED["Record latest expected upstream failure<br/>Older recent success does not bypass the default block"]
+    BBLOCK --> FAILED
+    STATE --> EVENT["Primary readiness event wakes blocked consumers"]
+    FAILED --> EVENT
+    STATE --> RECON["Periodic reconciliation fallback<br/>Repair lost or missed notifications"]
+    EVENT --> RECHECK["Metadata plane rechecks ALL dependencies<br/>Event alone is not authorization"]
+    RECON --> RECHECK
+    RECHECK --> READY{"Committed, fresh, window-compatible required inputs<br/>and no blocking latest expected upstream failure?"}
     READY -- Yes --> CLAIM["Atomically claim eligible consumer work<br/>Idempotent effects; mechanism pending"]
     CLAIM --> S2["Silver 2 joined output<br/>Architecture only: not added to current Patient-only build"]
     READY -- No --> BLOCK["BLOCKED_BY_DEPENDENCY<br/>Persist reason and notify; not a failed transformation"]
-    BLOCK --> WAIT["Wait for missing/stale dependency to become ready"]
-    WAIT --> REEVAL["Automatically reevaluate and dispatch promptly<br/>Do not wait for next scheduled cycle"]
-    REEVAL --> READY
+    BLOCK --> WAIT["Wait for dependency recovery<br/>Healthy independent work continues"]
+    WAIT -. Recovery notification .-> EVENT
     SLA["Separate availability SLA monitoring<br/>Record deadline breach and alert; not an execution veto"]
     BLOCK -. Deadline observations .-> SLA
     S2 -. Availability and time-to-recovery .-> SLA
     SLA -. Preserve original breach after recovery .-> HISTORY["Immutable SLA/recovery evidence"]
     NOTE -. Scope .-> DISC
+    COORD["Smaller domain/workflow Airflow DAGs<br/>Metadata authoritatively evaluates readiness and initiates runs"]
+    COORD -. Hybrid cross-DAG coordination .-> RECHECK

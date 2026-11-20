@@ -1,5 +1,11 @@
 # Proposed Framework Table Relationships
 
+**Original 17-table baseline, not the revised target model.** The November 20 decisions
+approve logical task/dataset/input separation and task function JSON arrays, superseding
+parts of this baseline. See `docs\ingestion\task-dataset-design.md` and the separate
+`09-task-dataset-logical.mmd` / `.svg`. Exact revised physical columns/FKs remain under
+review; the relationship rows below and `00`-`05` diagrams are preserved for comparison.
+
 Cardinality reads from the heading table to the related table. `many` includes zero.
 All relationships are proposed; full definitions and review decisions are in
 `docs\ingestion\metadata-design.md`. Column names are schema-qualified.

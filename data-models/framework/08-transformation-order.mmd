@@ -1,19 +1,21 @@
 flowchart TD
     META["Authoritative approved Fabric SQL metadata"]
-    META --> MACRO["Airflow macro graph<br/>Tasks, dataset edges, committed/fresh readiness"]
-    MACRO --> TASK["Eligible processing task<br/>Generic PySpark notebook"]
-    META --> ORDER["Ordered registered functions and parameters<br/>Normalized step rows versus JSON array is unresolved"]
+    META --> MACRO["Smaller domain/workflow Airflow DAGs<br/>Read-only immutable orchestration snapshots"]
+    MACRO --> TASK["One independently executable ProcessingTask record<br/>Generic stage PySpark notebook; justified specialization allowed"]
+    META --> ORDER["Approved storage: ONE ordered JSON function array per task<br/>Registered DataFrame functions and validated per-function parameters"]
     ORDER --> TASK
+    RESOURCES["Framework/stage defaults and task overrides<br/>Logical notebook, environment and separate compute refs"]
+    RESOURCES --> TASK
     TASK --> INPUT["Read pinned committed input versions"]
     INPUT --> F1["DataFrame.transform: registered function 1"]
     F1 --> F2["DataFrame.transform: registered function 2"]
     F2 --> FN["DataFrame.transform: remaining functions in configured order"]
     FN --> VALIDATE["Framework output validation and idempotent write"]
     VALIDATE --> COMMIT["Record committed output and coverage"]
-    COMMIT --> WAKE["Reevaluate dependent Airflow work"]
+    COMMIT --> WAKE["Readiness event; periodic reconciliation fallback<br/>Metadata rechecks all dependencies, then initiates Airflow work"]
     PURE["Business functions take/return DataFrames<br/>No framework instrumentation or source/target I/O inside functions"]
     PURE -. Applies to .-> F1
     PURE -. Applies to .-> F2
     PURE -. Applies to .-> FN
-    NOTE["Review direction only: function micro-order is not the dataset graph<br/>Airflow hosting/integration and physical metadata schemas remain open"]
+    NOTE["Function micro-order is not the normalized TaskInput/producer graph<br/>Legacy step profiling/history and physical metadata schemas need reconciliation"]
     NOTE -. Boundary .-> MACRO

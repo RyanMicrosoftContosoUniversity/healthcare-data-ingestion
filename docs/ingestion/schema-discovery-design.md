@@ -2,10 +2,13 @@
 
 **Status: proposed, awaiting explicit user review.**
 
-Reconciled with `discussions\discussed-changes.md`. Discovery is required; one full
-source-catalog pass is agreed in principle. Exact drift tolerance, scheduling,
-concurrency, and any lightweight second live-source recheck are still open.
-The earlier mandatory recheck and strict-default wording were not approvals.
+Reconciled with `discussions\discussed-changes.md` and the later
+`discussions\discussion-02.md`. Discovery before batch ingestion and blocking only the
+affected table on drift are approved. The November 20 follow-up selects **Strict**:
+every ingestion-relevant contract difference blocks, including nullable additions and
+type widening, until review/approved revision. Preserve one full source pass and staged
+validation; scheduling/concurrency, unavailable-evidence handling and any lightweight
+second check remain open. No duplicate full scan or compatibility allowlist is approved.
 
 This is a required pre-build review document for the schema-discovery and Bronze
 ingestion framework. Creating this document does not approve or implement the process.
@@ -22,6 +25,13 @@ The current Python validator checks the local JSON source contracts, not live SQ
 schemas. Discovery, its control tables, and the ingestion gate are not implemented.
 The framework table definitions remain in `docs\ingestion\metadata-design.md`; this
 document is the standalone process and behavior review.
+
+The approved task/dataset logical revision is in `docs\ingestion\task-dataset-design.md`.
+Bind discovery evidence to its ingestion mapping, immutable release/snapshot, and
+operation/attempt identity without replacing the accepted Bronze IDs. Exact adaptation
+of existing ops records remains a physical-design task. Schema validation is reusable;
+future streaming may validate at startup/schema change, not necessarily every event.
+Streaming implementation is outside the first batch build.
 
 ## Where Discovery Runs
 
@@ -103,11 +113,18 @@ schemas, or automatic target schema evolution for approved contracts.
 | `UNAVAILABLE` | Block the affected attempt when discovery cannot establish a match, such as a connection or permission failure. |
 | Evidence cannot be persisted | Block ingestion even if the in-memory comparison matched; missing evidence is never authorization. |
 
-**Exact tolerance is not approved.** Strict blocking, including additions/widening,
-was an earlier proposal. Decide which differences are incompatible versus permitted
-before implementing result classification. Discovery never changes source/target DDL,
-silently updates configuration, or approves a new expected contract. The proposed
-fail-closed handling of unavailable/unpersisted evidence also needs process review.
+**Strict comparison is approved.** Added columns (including nullable), removed/renamed
+columns, type widening/narrowing, changed lengths/precision/nullability, ordered keys,
+and required ingestion-column differences block the affected table. Persist differences
+and alert; do not copy source records, publish Bronze, or advance its watermark.
+Other eligible tables continue. There is no compatible-change allowlist.
+
+Resume fresh extraction only after review and an approved contract/mapping revision
+or correction of the source back to its approved contract. Never mutate the current
+run's frozen snapshot. Discovery does not change source/target DDL, silently update
+configuration, or approve its own observations. Fail-closed handling of unavailable/
+unpersisted evidence remains a separate process-review item, not an inferred approval
+from selecting Strict.
 
 Preserve table-level failure isolation: eligible tables may continue independently;
 blocked tables do not. If a required table is blocked, the overall ingestion run
@@ -160,7 +177,8 @@ fresh extraction always requires fresh live-source discovery.
 | Decision to review | Current proposal |
 | --- | --- |
 | Workflow placement | Reusable discovery before eligible fresh extraction, then prompt dependency-driven dispatch. One full pass is the agreed direction; integration/scheduling/concurrency are open. |
-| Drift policy | Exact compatibility and unavailable-evidence behavior remain open; strict blocking is only a proposal. |
+| Drift policy | **Approved: Strict.** All ingestion-relevant contract differences block that table pending review/approved revision or source correction; no allowlist or automatic evolution. |
+| Unavailable evidence | Connection/permission failure or inability to persist results: proposed fail-closed behavior still needs process review. |
 | Live-source recheck | Not approved. Decide whether a lightweight extra check is needed without duplicating full discovery. |
 | Staged validation / DDL consistency | Keep independent mapped-schema validation; choose explicit protection/assumptions for the discovery-to-extraction gap. |
 | Failure scope | Block affected tables; allow matching tables; overall run is not fully successful if required tables fail. |
@@ -168,22 +186,33 @@ fresh extraction always requires fresh live-source discovery.
 | Evidence model | Reuse the existing framework tables and retain successful as well as failed check evidence. |
 | Recovery behavior | Validate saved batches against their capture contract and approved target compatibility without requiring fresh source access. |
 
-All process proposals above remain pending review. The Bronze row-column set is
-approved separately, including the readable `_ingest_source_name`. Approval of this
-process does not approve the other framework table definitions, deployment targets,
-or cloud provisioning.
+The approved behaviors above do not finalize physical evidence/state schemas or the
+remaining policies. The Bronze row-column set remains approved, including readable
+`_ingest_source_name`. No process approval is permission to provision unconfirmed
+cloud targets or implement unreconciled baseline tables.
 
 For the approved independent Bronze/Silver 1, dependency-gated Silver 2, freshness
 versus SLA, and recovery/release requirements, review
 `docs\architecture\orchestration-design.md`. A consumer waiting for a blocked upstream
 dataset is `BLOCKED_BY_DEPENDENCY`, not a failed transformation. Persistence/state
-schema and zero-row readiness semantics are not approved by this document.
+schema remains under review. The subsequent November 20 decision accepts successful
+zero-change incremental runs with verified source-window coverage and normal validation/
+readiness checks; zero rows alone do not prove coverage. Empty initial/full-load
+acceptance remains separate. Discovery and staged-schema checks still apply to no-change
+runs; the detailed state protocol remains gated.
+
+Failure of the latest expected source/producer execution blocks dependent consumers
+by default, even if an older committed output is still recent. A schema/drift event is
+not authorization to run downstream work: the metadata plane rechecks commit,
+freshness, processing-window, and latest-expected-outcome requirements before dispatch.
+Readiness events are primary; periodic reconciliation repairs missed notifications.
 
 ## Acceptance Cases for the Later Implementation
 
 - Matching schemas permit extraction only after a persisted matching result.
 - Added/missing/renamed columns and type, length, precision, nullability, key, or
-  watermark differences follow the approved policy.
+  watermark differences block under Strict, including nullable additions and widening.
+  Physical column order alone remains non-blocking under explicit name-based projections.
 - Permission/connectivity failures, absent/stale PASS evidence, and evidence-store
   failures cannot authorize ingestion.
 - Drift after preflight and staged-schema mismatch cannot publish an invalid batch.

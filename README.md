@@ -23,13 +23,59 @@ string such as `Clarity.dbo.Patient`. The complete eight-column contract is unde
 **Accepted Bronze Row Metadata** in `docs\ingestion\metadata-design.md`; internal
 control-store source-object IDs remain unchanged. Other framework approvals are pending.
 
-`discussions\discussed-changes.md` is reconciled in
-`docs\architecture\orchestration-design.md`: independent Bronze/Silver 1,
-dependency-gated Silver 2, freshness versus availability SLA, automatic blocked-work
-recovery, and metadata-generated versioned Airflow releases. The 17-table framework is
-still a baseline awaiting review, not a finalized release/readiness schema. Discovery
-uses the one-pass direction; exact drift policy and a lightweight second check remain open.
-These architecture decisions do not expand the first Patient-only Silver build.
+`discussions\discussion-02.md` consolidates the earlier record and is reconciled in
+`docs\architecture\orchestration-design.md`. Approved directions now include task JSON
+function arrays, logical datasets/normalized inputs, smaller domain DAGs, hybrid
+readiness coordination, event-primary recovery with reconciliation fallback, candidate
+activation, and audited incident rollback. Latest expected upstream failure blocks
+consumers by default even if an older success is recent.
+
+Airflow hosting is selected: a **new Fabric-managed Apache Airflow job** for this
+project. Workspace/item/capacity placement and other deployment settings remain pending;
+no separate self-managed Airflow host is planned.
+
+**Synthea plus versioned mapping configuration** is selected for source generation and
+loading into the approved Azure SQL models through independent source loaders.
+**Azure Container Apps Jobs on Consumption** is selected for generation, with
+**approximately $10/month as the generation planning target**, not a fixed fee or
+enforced cap. That estimate excludes SQL databases, normal Fabric ingestion and the
+initial historical seed. Generator sizing, persistent storage, exact schedule and
+deployment targets remain open; no resources have been deployed.
+
+The workload is **demo-first and cost-conscious**, not hospital-volume simulation.
+The approved profile is 1,000 initial patients with 12 months retained history and
+about 500-1,000 daily source-row changes across both databases, including controlled
+corrections/soft deletes and on-demand zero-change/spike scenarios. Standard S0 (10 DTU)
+per SQL database is the accepted initial evaluation baseline, not a deployment approval
+or throughput guarantee. Correctness, recovery and isolated benchmarks remain in scope.
+
+Synthetic data generation runs well before daily Fabric ingestion, with source data
+intended to be ready before the 10:00 AM start. The generator's exact start time and
+handling of late/failed generation remain open; continuous generation is not assumed.
+
+Initial defaults are daily runs at **10:00 AM Eastern local time, observing daylight
+saving**, and a **24-elapsed-hour maximum age of committed source coverage** for downstream
+eligibility. Required Bronze and initial Patient Silver outputs have a separate
+**11:00 AM Eastern local time daily availability deadline**, also observing daylight
+saving; one-hour feasibility still needs
+benchmarking. Misses alert but allow useful late recovery, and recent older data does
+not bypass the rule blocking consumers after a latest expected upstream failure.
+
+Successful incremental runs with zero changed records count as successful when source
+coverage and normal validation/readiness checks are verified; preserve existing data.
+Future processed-record monitoring will use historical mean plus/minus two standard
+deviations for UCL/LCL. Implementation, baseline details and breach response are deferred.
+
+Review the logical revision in `docs\ingestion\task-dataset-design.md`.
+**Decisions still needed from you:** `docs\architecture\build-decisions.md` lists
+D01-D12 with the implementation, provisioning, or activation gate each blocks.
+The original 17-table diagrams are baseline, not finalized revised physical schemas.
+These decisions do not expand the first Patient-only Silver build or authorize cloud
+creation. **Strict schema comparison is approved**: nullable additions, widening and
+other ingestion-relevant contract differences block only the affected table pending
+review/approved revision, without automatic contract/target evolution. One source pass
+remains the direction; optional lightweight recheck, unavailable-evidence handling and
+other discovery mechanics still need review.
 
 ## Local Development
 
@@ -98,9 +144,11 @@ For a complete schema diagram rather than a keys-only overview, open
 It shows all 261 columns on all 17 tables, including shared configuration audit fields
 and Spark metric extensions, plus the same 30 foreign-key relationships.
 
-The new behavior review diagrams are `06-orchestration`, `07-release-lifecycle`, and
+The updated behavior review diagrams are `06-orchestration`, `07-release-lifecycle`, and
 `08-transformation-order` under `data-models\framework`, each with `.mmd` and `.svg`
 versions. They show approved directions without inventing approved ERD additions.
+`09-task-dataset-logical.mmd` / `.svg` separately shows the approved logical revision,
+not new physical column definitions or deployed tables.
 
 Review `docs\ingestion\schema-discovery-design.md` for the required discovery workflow,
 schema comparisons, blocking policy, retained evidence, and recovery behavior. The
