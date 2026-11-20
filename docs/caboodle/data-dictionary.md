@@ -35,7 +35,7 @@ The user approved this synthetic source model. Column definitions below are expo
 
 ##### Analytical Data Dictionary Conventions
 
-Caboodle remains an analytical source simulation, not a second operational schema. The proposal contains eight dimensions and seven facts in `dbo` in the separate Caboodle database. The simulated transformation process reads Clarity and publishes Caboodle; the reusable Fabric ingestion engine then ingests each database independently.
+Caboodle remains an analytical source simulation, not a second operational schema. The approved model contains eight dimensions and seven facts in `dbo` in the separate Caboodle database. Generate it independently with consistent shared synthetic identities; do not build Clarity-to-Caboodle ETL. The reusable Fabric ingestion engine ingests each source independently.
 
 All dimension and fact keys are generated `bigint` surrogate PKs unless explicitly stated otherwise. Source identifiers are retained for lineage and replay matching, not reused as surrogate keys. `DimDate.DateKey` is an `int` in `YYYYMMDD` form. SQL types describe the Azure SQL source databases; destination type mappings must be validated separately.
 

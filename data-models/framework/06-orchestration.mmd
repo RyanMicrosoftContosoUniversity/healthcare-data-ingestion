@@ -1,0 +1,24 @@
+flowchart TD
+    NOTE["Behavior review only: physical dependency/readiness schemas<br/>and trigger/claim mechanisms are not approved"]
+    START["Scheduled parent workflow"] --> DISC["Reusable source-schema discovery<br/>One full pass per selected table/cycle"]
+    DISC --> A{"Table A eligible?"}
+    DISC --> B{"Table B eligible?"}
+    A -- Yes --> BA["Bronze A<br/>Stage, validate mapped schema, publish captured batch once"]
+    B -- Yes --> BB["Bronze B<br/>Stage, validate mapped schema, publish captured batch once"]
+    A -- No --> AB["Record blocked source table and reason<br/>Drift/failure policy still under review"]
+    B -- No --> BBLOCK["Record blocked source table and reason<br/>Unrelated Bronze work continues"]
+    BA --> S1A["Independent Silver 1 A<br/>Normalize, validate, deduplicate, commit"]
+    BB --> S1B["Independent Silver 1 B<br/>Normalize, validate, deduplicate, commit"]
+    S1A --> READY{"All required upstream datasets committed<br/>with compatible versions and required freshness/coverage?"}
+    S1B --> READY
+    READY -- Yes --> CLAIM["Atomically claim eligible consumer work<br/>Idempotent effects; mechanism pending"]
+    CLAIM --> S2["Silver 2 joined output<br/>Architecture only: not added to current Patient-only build"]
+    READY -- No --> BLOCK["BLOCKED_BY_DEPENDENCY<br/>Persist reason and notify; not a failed transformation"]
+    BLOCK --> WAIT["Wait for missing/stale dependency to become ready"]
+    WAIT --> REEVAL["Automatically reevaluate and dispatch promptly<br/>Do not wait for next scheduled cycle"]
+    REEVAL --> READY
+    SLA["Separate availability SLA monitoring<br/>Record deadline breach and alert; not an execution veto"]
+    BLOCK -. Deadline observations .-> SLA
+    S2 -. Availability and time-to-recovery .-> SLA
+    SLA -. Preserve original breach after recovery .-> HISTORY["Immutable SLA/recovery evidence"]
+    NOTE -. Scope .-> DISC

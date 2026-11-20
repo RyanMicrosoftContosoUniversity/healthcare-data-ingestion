@@ -1,0 +1,19 @@
+flowchart TD
+    META["Authoritative approved Fabric SQL metadata"]
+    META --> MACRO["Airflow macro graph<br/>Tasks, dataset edges, committed/fresh readiness"]
+    MACRO --> TASK["Eligible processing task<br/>Generic PySpark notebook"]
+    META --> ORDER["Ordered registered functions and parameters<br/>Normalized step rows versus JSON array is unresolved"]
+    ORDER --> TASK
+    TASK --> INPUT["Read pinned committed input versions"]
+    INPUT --> F1["DataFrame.transform: registered function 1"]
+    F1 --> F2["DataFrame.transform: registered function 2"]
+    F2 --> FN["DataFrame.transform: remaining functions in configured order"]
+    FN --> VALIDATE["Framework output validation and idempotent write"]
+    VALIDATE --> COMMIT["Record committed output and coverage"]
+    COMMIT --> WAKE["Reevaluate dependent Airflow work"]
+    PURE["Business functions take/return DataFrames<br/>No framework instrumentation or source/target I/O inside functions"]
+    PURE -. Applies to .-> F1
+    PURE -. Applies to .-> F2
+    PURE -. Applies to .-> FN
+    NOTE["Review direction only: function micro-order is not the dataset graph<br/>Airflow hosting/integration and physical metadata schemas remain open"]
+    NOTE -. Boundary .-> MACRO

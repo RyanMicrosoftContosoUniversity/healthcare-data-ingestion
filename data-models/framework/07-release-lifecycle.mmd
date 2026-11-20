@@ -1,0 +1,20 @@
+flowchart TD
+    REVIEW["Required human/governance approvals<br/>before authoritative publication"]
+    REVIEW --> PUB["Publish approved Fabric SQL configuration<br/>Complete immutable snapshot and framework semver"]
+    PUB --> QUEUE["Automatically enqueue corresponding DAG release<br/>No second manual release approval"]
+    QUEUE --> NEXT["Sequential worker selects next approved release<br/>Queue/claim schema and trigger mechanism pending"]
+    NEXT --> GEN["Generate from this release's full snapshot and code revision<br/>Framework and DAG artifact share semantic version"]
+    GEN --> CHECK["Technical validation<br/>Cycles, references, registered functions, task definitions"]
+    CHECK --> DEPLOY["Deploy candidate DAG artifact<br/>Artifact/pinning/activation mechanisms pending"]
+    DEPLOY --> ACTIVE["Atomically activate successful release<br/>Published revision is not necessarily active"]
+    ACTIVE --> SUCCESS["Record active version and evidence<br/>Existing runs retain pinned revisions: mechanics need review"]
+    GEN -- Failure --> FAIL["Record failed release and diagnostics; alert<br/>Do not label it successfully deployed"]
+    CHECK -- Failure --> FAIL
+    DEPLOY -- Failure --> FAIL
+    FAIL --> KEEP["Keep last known good active deployment<br/>Do not automatically roll backward"]
+    KEEP --> NEXT
+    SUCCESS --> NEXT
+    EXAMPLE["Example only: active 1.1.0; failed 1.1.1; active 1.2.0<br/>Normally fix on latest as 1.2.1, not repaired older 1.1.1"]
+    KEEP -. Later queued release may proceed .-> EXAMPLE
+    NOTE["Conceptual lifecycle, not new approved ERD tables<br/>Initial design/environment/infrastructure approvals still apply"]
+    NOTE -. Boundary .-> PUB

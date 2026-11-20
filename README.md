@@ -23,6 +23,14 @@ string such as `Clarity.dbo.Patient`. The complete eight-column contract is unde
 **Accepted Bronze Row Metadata** in `docs\ingestion\metadata-design.md`; internal
 control-store source-object IDs remain unchanged. Other framework approvals are pending.
 
+`discussions\discussed-changes.md` is reconciled in
+`docs\architecture\orchestration-design.md`: independent Bronze/Silver 1,
+dependency-gated Silver 2, freshness versus availability SLA, automatic blocked-work
+recovery, and metadata-generated versioned Airflow releases. The 17-table framework is
+still a baseline awaiting review, not a finalized release/readiness schema. Discovery
+uses the one-pass direction; exact drift policy and a lightweight second check remain open.
+These architecture decisions do not expand the first Patient-only Silver build.
+
 ## Local Development
 
 Use Python 3.11-3.13 and `uv`. The eventual Spark environment must be validated and pinned
@@ -46,6 +54,17 @@ or cloud SDK runtime dependencies; add those only with the approved execution co
 The JSON snapshots describe columns and primary keys; they do not replace the documented
 FKs, filtered uniqueness, temporal constraints, or cross-row business validation rules.
 SQL deployment must implement and validate those additional approved constraints.
+
+Generate local SQL baselines from the approved contracts:
+
+```powershell
+uv run --locked python .\scripts\export_source_ddl.py
+```
+
+Outputs are `database\clarity\schema\001-source-baseline.sql` and the corresponding
+Caboodle script. See `database\README.md` for implemented constraints and remaining
+integrity/write-path work. These are empty-database definitions, not migrations or
+deployed databases; no metadata runtime or cloud resources are created.
 
 The original root `plan.md` remains intentionally ignored. To refresh exported source
 dictionaries/contracts from an explicitly reviewed local design:
@@ -78,6 +97,10 @@ For a complete schema diagram rather than a keys-only overview, open
 `data-models\framework\05-full-schema.mmd` or `05-full-schema.svg` in the same folder.
 It shows all 261 columns on all 17 tables, including shared configuration audit fields
 and Spark metric extensions, plus the same 30 foreign-key relationships.
+
+The new behavior review diagrams are `06-orchestration`, `07-release-lifecycle`, and
+`08-transformation-order` under `data-models\framework`, each with `.mmd` and `.svg`
+versions. They show approved directions without inventing approved ERD additions.
 
 Review `docs\ingestion\schema-discovery-design.md` for the required discovery workflow,
 schema comparisons, blocking policy, retained evidence, and recovery behavior. The

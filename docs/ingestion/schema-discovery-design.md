@@ -2,6 +2,11 @@
 
 **Status: proposed, awaiting explicit user review.**
 
+Reconciled with `discussions\discussed-changes.md`. Discovery is required; one full
+source-catalog pass is agreed in principle. Exact drift tolerance, scheduling,
+concurrency, and any lightweight second live-source recheck are still open.
+The earlier mandatory recheck and strict-default wording were not approvals.
+
 This is a required pre-build review document for the schema-discovery and Bronze
 ingestion framework. Creating this document does not approve or implement the process.
 Review it alongside `docs\ingestion\metadata-design.md` before implementing control
@@ -20,9 +25,11 @@ document is the standalone process and behavior review.
 
 ## Where Discovery Runs
 
-The ingestion parent pipeline invokes one reusable `schema_discovery` child pipeline
-before the fresh-extraction loop starts. The child inspects every selected source table
-and persists a result for each table attempt.
+The dependency-driven parent workflow invokes reusable discovery before eligible fresh
+extraction. Inspect each selected source table once per cycle, persist its result, and
+start eligible ingestion promptly instead of waiting for an arbitrary fixed start time.
+Do not add another full catalog scan. Airflow/Fabric integration, exact barriers,
+chunking, concurrency, timeout, and optional lightweight rechecks remain for review.
 
 ```text
 Start ingestion run; create selected table-attempt records
@@ -32,7 +39,6 @@ Start ingestion run; create selected table-attempt records
   -> For each eligible table:
        Acquire the mapping's write lease
        Establish fixed extraction boundaries and source checkpoint
-       Recheck source schema immediately before extraction
        Extract records into immutable batch staging
        Validate staged schema against the approved type mapping
        Append the batch to Bronze with batch-publication retry protection
@@ -40,8 +46,9 @@ Start ingestion run; create selected table-attempt records
   -> Finalize the overall ingestion run
 ```
 
-Only attempts with matching, persisted evidence for their frozen configuration may
-proceed. Complete the discovery pass before starting fresh extraction.
+Only attempts with acceptable persisted evidence for their frozen configuration may
+proceed. Complete applicable discovery before dependent extraction; whether results
+arrive as a complete pass or eligible groups is still a scheduling decision.
 
 The discovery activity uses the existing ingestion `RunID` and pre-created
 `TableRunID` values for control records. Record the native child-pipeline execution IDs
@@ -96,13 +103,14 @@ schemas, or automatic target schema evolution for approved contracts.
 | `UNAVAILABLE` | Block the affected attempt when discovery cannot establish a match, such as a connection or permission failure. |
 | Evidence cannot be persisted | Block ingestion even if the in-memory comparison matched; missing evidence is never authorization. |
 
-**Strict comparison is the proposed default.** Even nullable additions and type widening
-block until reviewed contract/mapping revisions or a separately approved bounded
-compatibility policy permits them. Discovery never changes source/target DDL, silently
-updates configuration, or approves schema drift.
+**Exact tolerance is not approved.** Strict blocking, including additions/widening,
+was an earlier proposal. Decide which differences are incompatible versus permitted
+before implementing result classification. Discovery never changes source/target DDL,
+silently updates configuration, or approves a new expected contract. The proposed
+fail-closed handling of unavailable/unpersisted evidence also needs process review.
 
-Preserve table-level failure isolation: matching tables may continue after the discovery
-pass; blocked tables do not. If a required table is blocked, the overall ingestion run
+Preserve table-level failure isolation: eligible tables may continue independently;
+blocked tables do not. If a required table is blocked, the overall ingestion run
 must not report full success. A fatal discovery failure blocks every table without its
 own persisted matching result.
 
@@ -117,8 +125,8 @@ Reuse the proposed framework tables; no additional control table is introduced.
 | --- | --- |
 | `ops.ReconciliationResult` | Every check, including successful checks, with status, source/attempt identity, configuration revisions, schema hashes, metadata-only snapshots, and check time. Numeric expected/actual fields may be null. |
 | `ops.SchemaChangeLog` | Expected/observed schemas, differences, and blocked or explicitly allowed disposition. |
-| `ops.IngestionError` | Sanitized discovery/recheck failures, retry classification, and correlated run/table-attempt IDs. |
-| `ops.IngestionTableRun` | Attempt status and completed discovery/recheck phases. |
+| `ops.IngestionError` | Sanitized discovery failures, retry classification, and correlated run/table-attempt IDs. |
+| `ops.IngestionTableRun` | Attempt status and completed discovery/staging validation phases. |
 | Planned centralized alert route | Discovery failures must be visible even when no Copy activity or Spark application starts. |
 
 Use distinct check names so phases retain their own evidence:
@@ -126,7 +134,7 @@ Use distinct check names so phases retain their own evidence:
 | Check name | Scope |
 | --- | --- |
 | `SOURCE_SCHEMA_PREFLIGHT` | Live source versus frozen contract before the extraction loop. |
-| `SOURCE_SCHEMA_BEFORE_EXTRACT` | Live source recheck immediately before that table's fresh extraction. |
+| `SOURCE_SCHEMA_BEFORE_EXTRACT` | Reserved proposal only if a lightweight second live-source check is later approved; not a required second pass. |
 | `EXTRACTED_SCHEMA_CONTRACT` | Staged input versus approved mapped schema before Bronze publication. |
 | `REPLAY_SCHEMA_CONTRACT` | Saved batch/capture contract and approved target compatibility during recovery. |
 
@@ -135,10 +143,11 @@ Do not store patient values, credentials, or raw exception payloads in schema ev
 
 ## Mid-Run Changes and Saved-Batch Recovery
 
-A preflight check does not lock the source schema for the entire execution. Recheck
-before extraction, coordinate source DDL changes, and validate staging before append.
-Abort on read/conversion/schema failures without advancing state. These checks do not
-claim an atomic guarantee against arbitrary concurrent source DDL.
+A single discovery pass leaves a time-of-check/time-of-use gap; it does not lock source
+DDL. Staged validation remains required, and read/conversion/schema failures must not
+publish invalid data or advance state. Coordinated DDL windows or another consistency
+protocol require review. Do not silently add an unapproved live recheck as the solution,
+or claim staged Spark types prove exact source SQL lengths/nullability at extraction.
 
 When recovering an already captured immutable batch, validate its saved schema,
 capture-contract revision, and compatibility with the approved target mapping. Do not
@@ -150,8 +159,10 @@ fresh extraction always requires fresh live-source discovery.
 
 | Decision to review | Current proposal |
 | --- | --- |
-| Pipeline placement | Mandatory reusable child pipeline before fresh extraction, plus per-table recheck and staged-schema validation. |
-| Default drift policy | Strict blocking, including additions/widening, unless explicitly approved. |
+| Workflow placement | Reusable discovery before eligible fresh extraction, then prompt dependency-driven dispatch. One full pass is the agreed direction; integration/scheduling/concurrency are open. |
+| Drift policy | Exact compatibility and unavailable-evidence behavior remain open; strict blocking is only a proposal. |
+| Live-source recheck | Not approved. Decide whether a lightweight extra check is needed without duplicating full discovery. |
+| Staged validation / DDL consistency | Keep independent mapped-schema validation; choose explicit protection/assumptions for the discovery-to-extraction gap. |
 | Failure scope | Block affected tables; allow matching tables; overall run is not fully successful if required tables fail. |
 | Expected-schema ownership | Reviewed, revisioned configuration; discovery never auto-promotes observations. |
 | Evidence model | Reuse the existing framework tables and retain successful as well as failed check evidence. |
@@ -161,6 +172,12 @@ All process proposals above remain pending review. The Bronze row-column set is
 approved separately, including the readable `_ingest_source_name`. Approval of this
 process does not approve the other framework table definitions, deployment targets,
 or cloud provisioning.
+
+For the approved independent Bronze/Silver 1, dependency-gated Silver 2, freshness
+versus SLA, and recovery/release requirements, review
+`docs\architecture\orchestration-design.md`. A consumer waiting for a blocked upstream
+dataset is `BLOCKED_BY_DEPENDENCY`, not a failed transformation. Persistence/state
+schema and zero-row readiness semantics are not approved by this document.
 
 ## Acceptance Cases for the Later Implementation
 
@@ -174,6 +191,8 @@ or cloud provisioning.
   table performs no source-data copy, Bronze append, or watermark advance.
 - Saved-batch replay validates its captured schema and target compatibility without
   silently extracting new data.
+- Prove one full source discovery pass per selected table/cycle; do not smuggle in a
+  second scan. Exercise the reviewed mid-run-DDL behavior and prompt eligible dispatch.
 
 SQL catalog references and full control-table column definitions are in
 `docs\ingestion\metadata-design.md`.

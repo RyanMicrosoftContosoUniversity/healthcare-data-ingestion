@@ -4,6 +4,13 @@
 deploy them. No source configuration records, control-store migrations, or Bronze
 pipelines should be implemented until this design is approved.
 
+**Discussion reconciliation:** `discussions\discussed-changes.md` approves behaviors,
+not the complete table model. `docs\architecture\orchestration-design.md` records
+independent Bronze/Silver 1, dependency-gated Silver 2, freshness versus availability
+SLA, blocked-task recovery, and generated versioned Airflow releases. The 17 tables
+below remain a baseline with unresolved dependency/readiness/release-state gaps.
+Do not implement migrations until those gaps and runtime decisions have been reviewed.
+
 ## Accepted Decision: Dedicated Fabric Metadata Workspace
 
 The control store will be a **Fabric SQL Database in a dedicated metadata workspace**,
@@ -42,7 +49,11 @@ and `https://learn.microsoft.com/en-us/fabric/database/sql/sql-analytics-endpoin
 | Control store | Accepted: Fabric SQL Database in a dedicated metadata workspace; no additional Azure SQL control database. |
 | Workspace separation | Accepted: metadata workspace is separate from the data/ingestion workspace. Workspace/database names, existing capacity assignment, and cross-workspace permissions must be confirmed before creation. |
 | Bronze | Accepted: append-only raw Delta observations, retaining source fields, `IsDeleted`, and source audits. Publish each captured batch once; preserve repeated keys/observations across distinct batches. Silver owns latest-state deduplication/merges. The eight technical row columns below are accepted, with a readable source name instead of a source-object ID. Publication/recovery details and retention policies remain under review. |
-| Schema discovery | Required before fresh source extraction: a reusable discovery pipeline compares live SQL schemas with frozen approved contracts. Proposed default: block affected tables on drift or unavailable evidence, record results, and alert; do not silently update contracts or targets. |
+| Schema discovery | Required before eligible fresh extraction; one reusable full source-catalog pass is the agreed direction. Exact drift policy, scheduling/concurrency, and any lightweight second live-source recheck remain open. Preserve staged-schema validation and table-level isolation. |
+| Layer dependencies | Approved behavior: independent Bronze and Silver 1; Silver 2 waits for explicit committed, sufficiently fresh upstream datasets. `BLOCKED_BY_DEPENDENCY` is waiting, not a failed transformation. Persistence schemas remain unapproved. |
+| Freshness and SLA | Approved behavior: dataset/consumer freshness gates eligibility; separate availability deadlines drive reporting/alerts, not a late-processing prohibition. Exact policy/time/calendar representation remains open. |
+| Recovery | Approved behavior: reevaluate and dispatch ready blocked work promptly, even after an SLA miss; preserve violation/recovery evidence and idempotent effects. Queue/claim/trigger implementation remains open. |
+| Orchestration and releases | Fabric SQL is authoritative; generate Airflow DAG artifacts after approved configuration publication, with the same framework/DAG semver and sequential release processing. Preserve last-good active deployment on failure and permit newer queued releases. Manifest/queue/active-pointer schemas are not approved. |
 | Incremental consistency | Begin with committed synthetic-generator epochs: pause source mutations at a known committed checkpoint while establishing/extracting a batch. Watermarks alone do not guarantee capture of arbitrary late commits. |
 | Silver | One row per Clarity `PatientID`; normalize approved text fields, deduplicate deterministically, preserve deletion status, and merge idempotently. Do not collapse Caboodle Type 2 versions into this table. |
 | Benchmarking | Separate, explicitly enabled benchmark invocations using frozen Delta inputs and full-column materialization between functions. No production publishing or watermark advancement. |
@@ -77,6 +88,12 @@ or its zoomable `05-full-schema.svg` preview. This separate diagram includes all
 table and all 50 Spark metric extension fields. It preserves all 30 FK relationships,
 marks nullability, and displays SQL decimal precision/scale in column comments.
 The keys-only overview and table definitions are unchanged.
+
+These ERDs describe the existing baseline only. Proposed release, dependency, readiness,
+policy, and blocked-dispatch roles are assessed in
+`docs\architecture\orchestration-design.md`; no extra physical tables or columns have
+been approved by the discussion. Behavior diagrams `06-orchestration`,
+`07-release-lifecycle`, and `08-transformation-order` are review views, not ER additions.
 
 ## Conventions and Invariants
 
@@ -233,6 +250,10 @@ Unique `(PipelineID, SourceObjectID)` and unique target identity across mappings
 release. Do not allow two active mapping owners to write the same target under separate locks.
 
 ### cfg.TransformationStep
+
+This remains a proposed normalized step model. The ordered-array preference has not
+resolved normalized rows versus JSON storage. Function order is not the graph of
+upstream dataset dependencies; retain this baseline until that choice is reviewed.
 
 | Column | Type | Null | Key / Purpose |
 | --- | --- | --- | --- |
@@ -521,15 +542,17 @@ supported type declarations, and key usability; it does not connect to live SQL 
 compare deployed schemas. `SchemaContractJson` and `SchemaChangeLog` are proposed
 framework definitions, not an implemented discovery service.
 
-The ingestion parent pipeline must invoke a reusable `schema_discovery` child pipeline
-and persist its result before starting the extraction loop:
+The dependency-driven parent workflow should invoke reusable schema discovery and
+start eligible ingestion promptly when applicable results are ready, without a
+fixed ingestion-start delay. One full discovery pass per selected source table/cycle
+is the agreed direction. Airflow/Fabric integration, exact scheduling/concurrency,
+result granularity, and any lightweight extra live-source check still need review:
 
 ```text
 Create ingestion run and selected table attempts; freeze approved configuration
   -> schema_discovery: inspect live SQL metadata for every selected source table
   -> persist PASS / FAIL / UNAVAILABLE evidence and schema differences
   -> extraction loop receives only mappings with a matching persisted PASS
-  -> recheck schema immediately before extraction
   -> copy to staging, validate mapped extracted schema, append batch to Bronze
 ```
 
@@ -563,34 +586,36 @@ Create ingestion run and selected table attempts; freeze approved configuration
 | Result | Disposition before source extraction |
 | --- | --- |
 | Approved contract matches | Persist `PASS`; authorize only that table attempt and frozen configuration. |
-| Added column, including nullable; changed type/length/precision/nullability; removed/renamed column; changed key/watermark | Default `FAIL`; block the affected table and record differences. An apparent rename is add/drop unless explicitly mapped and approved. |
+| Added/removed column, changed type/length/precision/nullability, or changed key/watermark | Classify and record the difference. Strict blocking is an earlier proposal, not approved tolerance; review allowed/blocked changes and contract promotion before runtime implementation. |
 | Source query fails, permissions are insufficient, or evidence cannot be persisted | Fail closed; do not copy, append, or advance the affected table's watermark. Record `UNAVAILABLE` where possible and a sanitized error; failure to record evidence cannot authorize ingestion. |
 | Only physical column order differs | Record observation; permit if explicit mappings and all ingestion-significant properties match. |
 
-Default schema validation is strict. Nullable additions and type widening still require
-reviewed contract/mapping revisions, or a separately approved bounded compatibility
-policy; discovery cannot approve them, edit metadata, alter source/target DDL, or change
-the current run's frozen configuration. Do not retry deterministic drift as a transient
-connection error.
+Exact drift tolerance, including nullable additions and widening, remains open. Do not
+silently promote the earlier strict proposal into an approved runtime policy. Discovery
+cannot approve contracts, edit metadata/DDL, or change the current run's frozen snapshot.
+Review allowed/blocked change classes and promotion before runtime work. Do not retry
+deterministic drift as a transient connection error.
 
 Use the existing 17-table model: write every check to `ops.ReconciliationResult`,
 differences to `ops.SchemaChangeLog`, and failures to `ops.IngestionError` with
-`FailurePhase = SCHEMA_DISCOVERY`. Track `SCHEMA_DISCOVERY` and `SCHEMA_RECHECK` in
-table-attempt phase progress. Correlate the child pipeline's native execution IDs in
+`FailurePhase = SCHEMA_DISCOVERY`. Track `SCHEMA_DISCOVERY` in table-attempt phase
+progress; `SCHEMA_RECHECK` applies only if an optional second check is later approved.
+Correlate the child workflow's native execution IDs in
 the parent run's execution context; no new run type is required for this child activity.
 Emit pre-Spark alerts through the planned centralized failure route.
 
-Complete the discovery pass before any selected table starts fresh extraction.
-Then allow matching tables to proceed while blocked tables remain failed, consistent
-with table-level failure isolation. An execution with blocked required tables cannot
-be reported as fully successful. A fatal discovery failure blocks every table lacking
-its own persisted matching result.
+Complete applicable discovery before its dependent source extraction and preserve
+table-level isolation. Exact discovery barrier/chunking/concurrency and result-delivery
+mechanics remain open. An execution with blocked required tables cannot be reported as
+fully successful; a fatal discovery failure cannot authorize tables without their own
+persisted acceptable result. Dependency-blocked downstream work is not a transformation
+failure; see the separate orchestration design.
 
-A preflight check does not lock the source schema for the whole run. Recheck immediately
-before extraction, coordinate source DDL changes, and validate staged schema before
-publication; abort on read/conversion/schema failures without advancing state. These
-checks reduce the validation-to-use gap but do not claim atomic protection from arbitrary
-concurrent DDL.
+A discovery pass does not lock source DDL. Keep staged-schema validation before
+publication and abort on read/conversion/schema failures without advancing state.
+Do not add another full source scan; a lightweight live recheck is explicitly unapproved.
+Source DDL/write consistency and the validation-to-use gap need design review rather
+than an implicit extra scan.
 
 For recovery using an already captured immutable batch, validate its saved schema,
 capture-contract revision, and compatibility with the approved target mapping before
@@ -622,7 +647,7 @@ Metadata visibility: `https://learn.microsoft.com/en-us/sql/relational-databases
    verify run type and owner/token before writes and before state commits.
 5. For source loads, establish the committed generator checkpoint and fixed extraction
    interval. Use parameterized inclusive lower/exclusive upper bounds with approved
-   overlap. Recheck live schema before fresh extraction; keep exact SQL timestamp values
+   overlap. Use the applicable discovery evidence; keep exact SQL timestamp values
    outside Spark precision-loss paths. Replay saved batches under the schema rules above.
 6. Copy to immutable batch-owned staging, validate its mapped schema, and append the
    captured observations to Bronze with enforced batch-publication idempotency.
@@ -643,6 +668,16 @@ Source checkpoints are part of the simulator's controlled consistency protocol, 
 proof that timestamp-only extraction is safe for arbitrary external SQL applications.
 CDC/Change Tracking, physical-delete capture, capture of every intermediate source mutation, and
 cross-source patient consolidation require later designs.
+
+### Approved Dependency and Release Behaviors Still Needing Schemas
+
+The protocol above is a proposed ingestion baseline, not a complete Airflow or
+Silver 2 scheduler. See `docs\architecture\orchestration-design.md` for the required
+committed/fresh readiness gates, `BLOCKED_BY_DEPENDENCY` semantics, separate
+availability SLA, automatic late recovery, ordered configuration releases, and failed
+release isolation. Review representation in existing columns/JSON versus new tables
+before adding statuses, dependency edges, freshness policies, dispatch queues, manifests,
+or active-version pointers. Preserve the current Patient-only first Silver scope.
 
 ## Patient Silver Contract Proposed for Approval
 
@@ -683,7 +718,8 @@ cross-source patient consolidation require later designs.
 - The 17 table definitions and runtime integration with the accepted Fabric SQL Database.
 - Configuration hierarchy, constraints, relationships, and recording grains.
 - Append-only Bronze batch publication, separate Bronze/staging retention, and the committed-source checkpoint protocol. The Bronze row-column set above is already accepted.
-- Explicit review of `docs\ingestion\schema-discovery-design.md`: mandatory discovery pipeline, strict schema gate, retained PASS/drift evidence, and table-level failure/recovery behavior.
+- Explicit review of `docs\ingestion\schema-discovery-design.md`: one-pass discovery direction, exact drift/failure policy, optional recheck/DDL consistency, retained evidence, and table-level isolation.
+- Review the readiness/dependency/freshness/SLA and release-state schema gaps in `docs\architecture\orchestration-design.md`; no implicit approval of new tables or status values.
 - Lease recovery, retry ownership, and post-target/pre-state replay semantics.
 - Patient Silver schema/deletion/deduplication contract.
 - Benchmark and telemetry isolation, evidence access, and retention.
