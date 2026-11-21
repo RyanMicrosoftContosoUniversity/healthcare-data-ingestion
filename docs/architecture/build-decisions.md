@@ -1,14 +1,18 @@
 # Complete Build Decisions and Remaining Reviews
 
 **Review checkpoint: November 20, 2026. All nine setup/operating groups B01-B09
-are approved, and the updated cost estimate is accepted for planning. Exact physical
-designs and the final costed Terraform plan are not yet approved.**
+are approved, and the updated cost estimate is accepted for planning.
+`discussions\discussed-changes-03.md` additionally approves the recommended remaining
+architectural directions and authorizes development. Concrete specifications and
+validation evidence must be produced; the actual costed Terraform plan still
+requires separate approval before infrastructure deployment.**
 
 This is the complete review register for the decisions recorded in the source-model
 approval, November 19-20 discussions, root design and deployment plan. Later explicit
 approvals supersede older proposals. The A-series below records settled decisions;
-the R-series lists every outstanding review area, including details previously
-scattered across other documents. Inputs and engineering checks are separate.
+the R-series lists engineering work I must resolve and document, including details
+previously scattered across other documents. It is not a list of additional user
+decisions. Inputs and engineering checks are separate.
 
 It does not reopen approved choices or turn suggestions into defaults. The initial
 delivery remains all-table Bronze plus Clarity Patient Silver 1, utilities, isolated
@@ -17,8 +21,61 @@ expand that delivery.
 
 Local source SQL preparation already exists. Not every item below blocks that work:
 the **Needed before** column identifies the affected build/deployment/activation gate.
-Selected cloud targets/component names are recorded below. Cloud deployment and
-exact revised framework schemas remain unapproved.
+Selected cloud targets/component names are recorded below. Local framework implementation
+is authorized by handoff03; cloud deployment remains unapproved.
+
+## Latest Approval Handoff and Development Authorization
+
+The implementation now separates processing windows from verified generator source
+coverage throughout bindings, outputs, readiness and recovery evidence. Freshness uses
+the actual source-covered-through time, never publication time. Runtime/release contracts
+and remaining live inputs are consolidated in `docs\ingestion\runtime-operations.md`
+and `.azure\deployment-plan.md`. These are implementation evidence and deployment
+prerequisites, not additional architecture decisions.
+
+**Architectural directions are approved, including the remaining recommendations.**
+The latest handoff and instruction to perform development supersede the former
+blanket stop on local framework implementation. R01-R53 are now **direction approved /
+implementation specification and evidence pending**, not another user decision loop.
+Preserve original A/B source and scope decisions unless a later explicit change below
+overrides them. No infrastructure apply, resource creation or activation is authorized.
+
+| Package | What I prepare | What the user reviews |
+| --- | --- | --- |
+| Framework implementation | Concrete physical metadata/migrations, discovery/capture/recovery, readiness/events, execution/release and observability code with tests. | Concrete specifications, code review and evidence; not 53 individual architecture approvals. |
+| Patient Silver implementation | Exact Patient output dictionary, precision-safe normalization/deduplication/merge/delete and acceptance fixtures. | Concrete contract, code review and evidence under the approved Patient-only direction. |
+| Costed deployment plan | Resolved inputs, verified providers/permissions/network/headroom, Terraform changes and updated costs. | Separate explicit approval of the actual infrastructure plan before deployment. |
+
+| Later explicit decision | Approved direction / implementation requirement |
+| --- | --- |
+| Current readiness and output history | Separate dataset readiness, historical committed output instances and task attempts. Preserve last-valid output on newer failure; compare logical watermark/window, not completion time, and reject stale progress. |
+| Events and reconciliation | Publish readiness only on validated commit; order-aware idempotent events and safe configurable coalescing. Five-minute default reconciliation, one active run, immutable snapshot, bounded retry/catch-up and email on persistent failure. |
+| Rerun binding and historical inputs | Queued/running tasks retain DAG-run framework version. Manual reruns default to original approved version; another approved version is explicit. Never silently replace unavailable historical input snapshots. |
+| Concurrent windows and fixed inputs | Prevent/queue conflicting dataset-window reruns; permit nonconflicting windows. Transformations bind fixed Delta versions; retain references while active execution or approved recovery requires them. |
+| Quality corruption and rollback | Technical rollback affects new work only. Flag suspect outputs and lineage descendants; block affected consumption, keep unrelated work running. Routine failures clear after validation; confirmed corruption needs operator-approved unblock. |
+| Quality severity/quarantine | Critical violations block publication, noncritical violations warn. Centrally configured quarantine thresholds and targeted validated/idempotent replay with full-reprocess fallback; preserve causes/IDs/attempt lineage. Conflicting Patient key/time ties still fail. |
+| Live source and curated schema contracts | Strict live pre-extraction source validation, no caching in place of it or auto-evolution. CI/CD checks intentional curated-schema changes against downstream contracts; incompatible consumers migrate in the same release. |
+| Metadata migration failure/compatibility | Halt deployment on migration failure; controlled correction, transactional operations where supported, no assumed arbitrary DDL undo. Apply compatible migrations before dependent code and retain rollback compatibility. |
+| Metadata outage and partial success | Block new starts during control-store outage; safe in-flight work reconciles before readiness. Keep unrelated successful commits available; exhausted retries require explicit intervention. |
+| Backfills | Explicit, not automatic after transformation change. Default current corrected source, selectable available historical snapshots; record actual source versions. Coordinate conflicting writes, prioritize daily work, checkpoint/resume by window. |
+| Retirement and rename | Immutable logical IDs survive rename and mapping changes. Logical retirement prevents new dependencies and preserves data/history/lineage subject to retention; mapping changes remain CI/CD governed. |
+| Missed availability | Continue useful processing after 11 AM, retain/alert SLA violation, escalate recurring misses with configurable thresholds. Deadline is not task timeout. |
+| Configuration/hotfix governance | GitHub branch/PR, code review, CI and versioned publication. No direct production metadata edits or hotfix review bypass; reviewed publication still automatically drives technical deployment. |
+| Versioned Fabric environments | Pin package/dependencies/notebooks/environment configuration to release; publish the environment before activation. Do not modify active environments in place; rollback selects matching approved configuration for new runs. |
+| Compute concurrency/escalation | Central workload/profile limits and task overrides, native throttling and proactive scheduling. Confirmed resource failures may use supported Fabric compute escalation only within configured caps; no automatic capacity creation/resizing or generator-limit expansion. |
+| Connections and service identities | Logical connection refs only in metadata; credentials in Fabric connections or an approved secret store. Scheduled execution uses scoped machine identities, not personal accounts. |
+| Audit retention/access | Seven-year target for execution/readiness audit, read-only role-controlled Fabric access. This is a user target, not a regulatory assertion; protect referenced evidence and keep distinct temporary/data retention policies. |
+| Cleanup | Centrally configured retention/reference holds. Cleanup has independent retries/alerts and does not halt ingestion except explicit critical operational/compliance conditions. |
+| Metadata backup/resilience | Native Fabric SQL backup/restore only; no custom backup system. Native demo resilience; cross-region DR deferred. |
+| Notification channel | Outlook/email only, not Teams; recipient and delivery verification still required before activation. |
+| Metrics/cost priority | Detailed task-level metrics/exact cost attribution deprioritized. Preserve existing operational logging, Spark diagnostics, isolated benchmark and alert scope without expanding it. |
+| Other deferrals | No isolated migration-test database, new transient-notebook retry redesign or access-review cadence workflow now. Preserve existing bounded policies, scoped access and separate Fabric metadata database. |
+
+R01-R53 are my engineering checklist for those packages and their implementation/
+acceptance work, not 53 individual approvals. I01-I08 are values to resolve; V01-V14
+are checks to perform. Ask the user only for an unavailable authorized input or a
+material exception to approved scope, cost or constraints. Do not reopen settled
+choices or ask the user to design algorithms, SQL types or routine implementation.
 
 ## How to Review This Register
 
@@ -26,24 +83,52 @@ exact revised framework schemas remain unapproved.
 | --- | --- |
 | A01-A80 | **Settled direction or scope.** Preserve these choices. Approval of a direction is not approval of an unprepared physical implementation. |
 | B01-B09 | **Approved setup batch.** Original approval groups retained for traceability; expanded in A01-A80. |
-| R01-R53 | **Review required.** Existing direction/proposal and the exact remaining decision are stated. No new value in these rows is treated as approved. |
+| R01-R53 | **Direction approved; specification/evidence pending.** Resolve and implement under handoff03, with concrete definitions/tests and code review; not additional individual user decisions or proof of deployment. |
 | I01-I08 | **Input required.** Concrete deployment values to resolve; these are not new architecture choices. Discover them from approved targets where possible. |
 | V01-V14 | **Verification required.** Engineering checks and evidence, not requests for the user to invent implementation details. |
 | F01-F08 | **Deferred / outside initial delivery.** Do not implement these merely because the model can accommodate them. |
 | H01-H09 | **Superseded / excluded.** Historical proposals and incorrect interpretations that must not enter the current build. |
 | D01-D12 | Existing gate/reference map, retained below. These are not twelve wholly undecided architecture choices. |
 
-**Review packaging:** R01-R53 are details to resolve in three cohesive packages:
-the revised framework/discovery/recovery/release design, the exact Patient Silver
-contract, and the verified costed Terraform/deployment plan. They are not 53 separate
-setup-question rounds. Engineering prepares concrete designs and validation evidence;
-the user reviews those packages before their dependent implementation/deployment.
+**Review packaging:** use the three packages above. Keep detailed requirements and
+validation evidence for traceability without turning every checklist row into a new
+approval gate. Engineering work must still satisfy the agreed scope and checks.
 
 **Already prepared:** package/test tooling, approved source dictionaries/contracts,
-local empty-database SQL baselines and review diagrams. **Not yet deployed:** SQL
+independent generator/loaders, source/control migrations and column dictionaries,
+29-task configuration, discovery/capture/recovery, Patient Silver, quality/quarantine,
+diagnostics/benchmarks, executable release/DAG preparation and Terraform modules.
+Review diagrams are retained. **Not yet deployed:** SQL
 sources, generator jobs, Fabric workspaces/items, revised control tables, ingestion,
 Silver, release automation and alerts. The original 17-table / 261-column / 30-FK
 metadata ERDs are a baseline, not the approved revised physical schema.
+
+### Local Engineering Evidence and Live Boundary
+
+November 21 local checkpoint: full native suite 191 passed / two Windows Spark
+module skips; latest runtime selector 30 passed; final real Linux Spark suite
+10 passed. Ruff, source/wheel build, stable 28/454 exports, CI YAML parsing,
+bootstrap/workload Terraform validation and 51-artifact/37-module bundle hashes
+passed. This records the pre-ADO local checkpoint; live R53 signoff remains pending.
+
+The subsequent Azure DevOps delivery request registered pipelines **33/34/35** in
+**Contoso-University / Fabric**, published review PR **#1** and completed actual hosted
+CI **1127 successfully** (Native, real Spark and Terraform). See
+`docs\ingestion\azure-devops-delivery.md`. Registering those definitions
+does not provision the SQL/Fabric workload, satisfy live acceptance or approve a
+Terraform plan. The generator now has an explicit foundation/image/manual-job
+sequence so initial provisioning cannot accidentally start the daily schedule.
+
+| Register area | Concrete local deliverables | Still gated |
+| --- | --- | --- |
+| R01-R07, R22-R28 | `database\metadata\` migrations, revised column dictionaries/public protocols; SQL/SQLite state, coverage, fencing, events, corruption and retention tests. | Apply and negative-permission/concurrency checks against actual Fabric SQL. |
+| R08-R15 | `database\schema-contracts\`, source migrations; versioned mapping/population/checkpoint code, independent loaders and leased acknowledgement/cleanup. | Actual SQL seed, representative daily volume, published generator image and consumption cleanup. |
+| R16-R21 | Strict live catalog comparison, held source transaction, immutable capture/source proofs and staged validation. | Actual source privileges/DDL-lock compatibility and throughput. |
+| R29-R33 | Patient output contract, registered trimming/deduplication, conflicting-tie rejection and stale-safe Delta merge with preserved deletes/audits. | Demonstrate the approved live SQL-to-Bronze-to-Silver slice. |
+| R34-R41 | Release/rollback protocols; immutable workflow-run pins; executable notebooks/DAGs/plugins/manifests; profile-aware submission, primary event dispatch and reconciliation fallback. PR CI validates native/Spark/package/Terraform paths without deploying. | Real environment/ODBC/certificate delivery, Airflow profile/API recognition and published-artifact activation checks. |
+| R42-R43 | Bootstrap/workload Terraform, scoped roles, disabled operational alerts and budget notifications. | Actual input-resolved costed plan and explicit apply approval. The accepted $60 estimate remains a planning reference, not a cap or new measured bill. |
+| R44-R49 | Attempt-bound diagnostics, typed unavailable metrics, protected event outbox/replay, schedule/freshness/heartbeat alerts and explicit measured-health hooks. | Actual session correlation/collector scheduling, representative duration/memory policy, email delivery and alert activation. No unsupported measurement/escalation is fabricated. |
+| R50-R53 | Separate fixed-input benchmarks including setup failures; protected replay/retention; native and real Spark validation plus operator runbook. | Live end-to-end acceptance, R53 evidence and final deployed signoff. Local tests are not that signoff. |
 
 ## Complete Settled-Decision Inventory
 
@@ -193,16 +278,18 @@ The initial Caboodle patient table is `DimPatient`; earlier conversational
 | A79 | Generator spend controls | Approximately $10/month generator-only planning target with $8/$10 notifications, not shutdown, a fixed fee or the whole-platform budget. Registry was already included in the generation illustration; free grants are conditional, not guaranteed. |
 | A80 | Release acceptance | Local tests/lint/build plus applicable live SQL/catalog, Terraform and deployed Fabric checks; prove full/incremental/replay correctness, source-to-Bronze reconciliation, Patient Silver, benchmark isolation and alert delivery. Re-deployment must be non-destructive. Stop at A01-A02. |
 
-## All Remaining Review Decisions
+## Engineering Work to Prepare the Three Review Packages
 
-Every R-series row is **review required**, even where the existing proposal is
-specific. Directions already approved in A/B are not reopened. A physical design
-must supply the details below before that review can approve implementation;
-listing the requirement here does not pretend the design already exists.
+Every R-series row has **approved architectural direction** under handoff03. Its
+concrete specification and implementation evidence remain engineering-owned work.
+Implement and validate without inventing completed schemas, provider support or
+test results. Earlier R text describes deliverable requirements, not an outstanding
+direction-choice gate. Later explicit policies above override conflicting proposals;
+the actual Terraform plan/apply and code-review requirements remain in force.
 
 ### Revised Physical Metadata and Configuration
 
-| ID | Decision to review | Existing direction/proposal and exact remaining question | Gates |
+| ID | Engineering deliverable | Existing direction / details I must resolve | Gates |
 | --- | --- | --- | --- |
 | R01 | Complete revised physical dictionaries | Supply every table/column's purpose, SQL type/precision, nullability, PK/FK/UQ, index, grain and lifecycle for task/dataset/input, configuration, history, readiness/events and releases. Reconcile the baseline; do not claim its 17-table count is final. | D01 |
 | R02 | Operational reuse and relational integrity | Decide which existing ops tables fit general tasks and which need adaptation/new roles; retain ingestion batch/watermark lineage, cross-run/mapping consistency, stable IDs and protected history. Review correlated/composite constraints and no cascading loss of referenced evidence. | D01 |
@@ -214,7 +301,7 @@ listing the requirement here does not pretend the design already exists.
 
 ### Source Schemas, Mapping and Capture
 
-| ID | Decision to review | Existing direction/proposal and exact remaining question | Gates |
+| ID | Engineering deliverable | Existing direction / details I must resolve | Gates |
 | --- | --- | --- | --- |
 | R08 | Synthea export/mapping coverage | Compare CSV/FHIR coverage and supply executable mappings for all approved fields, units, nulls, relationships and controlled mutations. Identify supplemental operational/test rules explicitly; do not change dictionaries silently. | D05, D09 |
 | R09 | Stable keys and source histories | Define deterministic seed/key allocation, shared identity manifest, dependency-ordered loaders, source-specific audits/soft deletes, Type 2 expirations/non-overlap and fact/dimension consistency. Prove independent restart without cross-source ETL. | D05 |
@@ -227,7 +314,7 @@ listing the requirement here does not pretend the design already exists.
 
 ### Discovery and Evidence
 
-| ID | Decision to review | Existing direction/proposal and exact remaining question | Gates |
+| ID | Engineering deliverable | Existing direction / details I must resolve | Gates |
 | --- | --- | --- | --- |
 | R16 | Discovery integration/concurrency/retries | Define shared child workflow, selected-table scheduling, parallelism, timeouts, bounded transient retries and prompt per-table dispatch. One full pass is settled; deterministic drift is not a transient retry. | D02-D03 |
 | R17 | Unavailable/unpersisted evidence | Proposed fail-closed: missing metadata access, failed connection or evidence persistence cannot authorize extraction. Review actual PASS/FAIL/UNAVAILABLE persistence, attempt status, retry/fatal scope and notification behavior; Strict approval alone did not approve this protocol. | D01, D03 |
@@ -238,7 +325,7 @@ listing the requirement here does not pretend the design already exists.
 
 ### Bronze Publication, Readiness and Recovery
 
-| ID | Decision to review | Existing direction/proposal and exact remaining question | Gates |
+| ID | Engineering deliverable | Existing direction / details I must resolve | Gates |
 | --- | --- | --- | --- |
 | R22 | Batch-idempotent Delta publication | Select and validate the actual append/commit-evidence mechanism, stable batch identity, target-version recording and already-published handling. Preserve writer versus capture IDs; do not deduplicate business keys or reappend to relabel a retry. | D01, D05 |
 | R23 | Post-Delta/pre-SQL failure recovery | Specify durable publication evidence, verification and fenced repair of SQL progress after target success. No distributed transaction/exactly-once atomicity claim; prevent duplicate append and older windows overwriting newer progress. | D01, D05 |
@@ -250,7 +337,7 @@ listing the requirement here does not pretend the design already exists.
 
 ### Exact Patient Silver Contract
 
-| ID | Decision to review | Existing direction/proposal and exact remaining question | Gates |
+| ID | Engineering deliverable | Existing direction / details I must resolve | Gates |
 | --- | --- | --- | --- |
 | R29 | Target name and output dictionary | Confirm exact Silver schema/table and `patient_bronze_silver` mapping; enumerate every output column/type/nullability, source-field and Bronze-lineage treatment. One row per Clarity `PatientID`, not a consolidated Caboodle model. | D06 |
 | R30 | Normalization/type precision | Specify the approved name fields to trim, null handling and exact SQL-to-Spark output mappings, especially `datetime2(7)` versus Spark timestamp precision. Preserve IDs/audits; no extra case folding, identifier trimming or clinical imputation is selected. | D06 |
@@ -260,7 +347,7 @@ listing the requirement here does not pretend the design already exists.
 
 ### Fabric Execution, Releases and Infrastructure
 
-| ID | Decision to review | Existing direction/proposal and exact remaining question | Gates |
+| ID | Engineering deliverable | Existing direction / details I must resolve | Gates |
 | --- | --- | --- | --- |
 | R34 | Logical-to-physical execution maps | Define notebook, pipeline/Copy, stage environment and compute references, same/cross-workspace transactional paths and source/target connections. Preserve logical IDs and approved workspace/capacity placement. | D01-D02, D07-D09 |
 | R35 | Pinned runtimes and startup settings | Select tested compatible package, Spark/Fabric environment, Airflow and generator Java/image versions; define startup-only versus per-task settings, concurrency/session isolation and compute defaults. No automatic runtime/capacity upgrade. | D02, D09 |
@@ -275,7 +362,7 @@ listing the requirement here does not pretend the design already exists.
 
 ### Logging, Alerts, Benchmarks and Retention
 
-| ID | Decision to review | Existing direction/proposal and exact remaining question | Gates |
+| ID | Engineering deliverable | Existing direction / details I must resolve | Gates |
 | --- | --- | --- | --- |
 | R44 | Shared logger/event contract | Review proposed standard-library logging, INFO/default and targeted DEBUG, idempotent handlers, scoped context, newline JSON and driver-only JVM bridge/severity mapping. Define sanitization/error fallback; logging failures must not mask original failures or alter authoritative state. | D01, D11 |
 | R45 | Metric source/field matrix | Map each planned comparison field to a supported collection source, unit/type, application/attempt grain and availability reason. Define final/partial/retried snapshots and avoid fabricated anomalies or application-wide totals attributed to each step. | D01, D11 |
@@ -360,7 +447,8 @@ a user request. Preserve the current replacement rather than infer broader appro
 ## Review Source of Truth and Change Control
 
 Source records remain unchanged:
-`discussions\discussed-changes.md` and `discussions\discussion-02.md`.
+`discussions\discussed-changes.md`, `discussions\discussion-02.md` and
+`discussions\discussed-changes-03.md`; the third is the latest approval handoff.
 Current choices also come from `docs\architecture\source-model-approval.md`,
 `.azure\deployment-plan.md` and the intentionally ignored root `plan.md`.
 Physical review requirements are reconciled from
@@ -368,13 +456,15 @@ Physical review requirements are reconciled from
 `docs\ingestion\task-dataset-design.md`, `docs\architecture\orchestration-design.md`
 and `database\README.md`.
 
-Record future approvals against the applicable R/I/V IDs and corresponding concrete
-artifacts; revise their status only after explicit approval or actual verification.
+Record package approvals against the concrete artifacts, linking applicable R IDs
+for traceability. Record input resolution and verification against I/V IDs; they do
+not each require a new user approval. Change approval/verification status only with
+the corresponding explicit approval or actual evidence.
 Do not infer permission to migrate, publish, create resources, apply Terraform or
 activate alerts from the presence of this register. Existing D/B IDs below remain
 stable for references elsewhere in the repository.
 
-## User Choices and Review Gates
+## Gate Reference Map: Not Additional User Decisions
 
 | ID | Decision / review area | Approved direction and remaining review / verification | Needed before |
 | --- | --- | --- | --- |
@@ -427,7 +517,7 @@ SQL's Azure-services firewall exception is not subscription-scoped; Synthea's de
 demographics use Massachusetts Census data. These checks do not prove tenant-specific
 connectivity, permission paths, worker performance or deployment readiness.
 
-## Synthea Generation: Chosen Direction and Remaining Decisions
+## Synthea Generation: Approved Direction and Engineering Work
 
 November 20: **Synthea plus versioned mapping configuration to load the approved
 Azure SQL models is selected.** Preserve independent source loaders and shared stable
@@ -709,6 +799,7 @@ approval questions.
   Future processed-record UCL/LCL use the historical mean plus/minus two standard
   deviations. Their implementation and breach-response policy are deferred.
 
-**Next review package:** D01's physical model/protocol and D03-D06's initial flow policies,
-alongside D02/D07-D09's environment inputs. Answer remaining items at their stated gates;
-do not block independent approved local source work on unrelated production settings.
+**Next:** I prepare the three concrete review packages above and resolve their
+engineering inputs/checks. D/R references identify requirements, not additional
+setup-question rounds. Do not block independent approved local source work on
+unrelated production settings.
