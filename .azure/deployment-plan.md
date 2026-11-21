@@ -27,8 +27,10 @@ Delivery definitions reference CI 33; release references infrastructure 34.
 Only the new relevant definitions were added to existing connection permissions.
 
 The implementation is pushed to `build/healthcare-ado-delivery` with GitHub PR **#1**.
-Actual hosted CI run **1127** validates that PR. Server-side compilation of all three
-YAML definitions passed. These are deployed **ADO definitions**, not deployed
+Actual hosted CI run **1127** **succeeded**, including native/package/bundle, real
+Spark/Delta and Terraform jobs; its `validated-release` artifact is published.
+Server-side compilation of all three YAML definitions passed. These are deployed
+**ADO definitions**, not deployed
 Azure/Fabric workloads. Initial infrastructure delivery requires successful CI for
 the exact reviewed main commit, actual Secure File inputs and saved-plan review.
 No fabricated review, runtime identity or activation evidence is permitted.

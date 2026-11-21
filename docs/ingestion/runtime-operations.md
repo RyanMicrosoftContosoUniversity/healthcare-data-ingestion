@@ -173,7 +173,7 @@ not a claim that its bytes change when later CI builds a new candidate.
 
 The subsequent CI/CD request deployed Azure DevOps definitions **33** (CI), **34**
 (infrastructure), **35** (release) in **Contoso-University / Fabric** and published PR
-**#1**. Hosted CI **1127** runs the actual PR code and produces its own byte-verified
+**#1**. Hosted CI **1127 succeeded** against the actual PR code and published its byte-verified
 bundle/provenance artifact. See `azure-devops-delivery.md` for delivery order and
 remaining inputs. Live SQL/Fabric execution and R53 acceptance have not occurred.
 

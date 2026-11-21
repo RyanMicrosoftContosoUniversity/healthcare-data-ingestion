@@ -112,8 +112,9 @@ bootstrap/workload Terraform validation and 51-artifact/37-module bundle hashes
 passed. This records the pre-ADO local checkpoint; live R53 signoff remains pending.
 
 The subsequent Azure DevOps delivery request registered pipelines **33/34/35** in
-**Contoso-University / Fabric**, published review PR **#1** and started actual hosted
-CI **1127**. See `docs\ingestion\azure-devops-delivery.md`. Registering those definitions
+**Contoso-University / Fabric**, published review PR **#1** and completed actual hosted
+CI **1127 successfully** (Native, real Spark and Terraform). See
+`docs\ingestion\azure-devops-delivery.md`. Registering those definitions
 does not provision the SQL/Fabric workload, satisfy live acceptance or approve a
 Terraform plan. The generator now has an explicit foundation/image/manual-job
 sequence so initial provisioning cannot accidentally start the daily schedule.

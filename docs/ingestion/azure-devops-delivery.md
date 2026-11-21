@@ -15,7 +15,8 @@ client secret is used by those jobs.
 
 Registered definition IDs are **33**, **34**, **35**, respectively, in folder
 `\healthcare-data-ingestion`. Review branch: `build/healthcare-ado-delivery`, PR **#1**.
-Actual PR CI run: **1127**. All three definitions passed server-side YAML compilation.
+Actual PR CI run **1127 succeeded**, including Native, Spark and Terraform, and
+published `validated-release`. All three definitions passed server-side YAML compilation.
 
 Set `CI_PIPELINE_ID` on both delivery definitions and `INFRA_PIPELINE_ID` on the
 release definition to the registered IDs. Select `ciRunId` for the exact successful
