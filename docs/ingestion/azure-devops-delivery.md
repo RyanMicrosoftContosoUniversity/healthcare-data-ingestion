@@ -13,6 +13,10 @@ client secret is used by those jobs.
 | `healthcare-ingestion-infrastructure` | Bootstrap or workload validation, saved plan, restricted review and exact-plan apply | Plan only; no implicit apply |
 | `healthcare-ingestion-release` | Immutable ACR image, transactional SQL migrations or verified Fabric assets | No source seeding, release/schedule/alert activation |
 
+Registered definition IDs are **33**, **34**, **35**, respectively, in folder
+`\healthcare-data-ingestion`. Review branch: `build/healthcare-ado-delivery`, PR **#1**.
+Actual PR CI run: **1127**. All three definitions passed server-side YAML compilation.
+
 Set `CI_PIPELINE_ID` on both delivery definitions and `INFRA_PIPELINE_ID` on the
 release definition to the registered IDs. Select `ciRunId` for the exact successful
 main commit being delivered. Draft/unreviewed branches may run CI but cannot deploy

@@ -168,8 +168,14 @@ modules matching current source, including all four DAG upload requests.
 The release embeds contracts under `clarity-source` / `caboodle-source`.
 All assets remain UNPUBLISHED and deployment requests UNEXECUTED. The raw demo
 physical mappings are logical templates: finalize reviewed SQL/lakehouse bindings
-before publication/activation. Hosted CI, live SQL/Fabric runs and R53 acceptance
-have not occurred.
+before publication/activation. This is the pre-ADO immutable local bundle checkpoint,
+not a claim that its bytes change when later CI builds a new candidate.
+
+The subsequent CI/CD request deployed Azure DevOps definitions **33** (CI), **34**
+(infrastructure), **35** (release) in **Contoso-University / Fabric** and published PR
+**#1**. Hosted CI **1127** runs the actual PR code and produces its own byte-verified
+bundle/provenance artifact. See `azure-devops-delivery.md` for delivery order and
+remaining inputs. Live SQL/Fabric execution and R53 acceptance have not occurred.
 
 ## Infrastructure stop and live inputs
 

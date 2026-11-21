@@ -17,6 +17,29 @@ isolated migration-test database, detailed cost attribution or a new task-by-tas
 approval loop. Unverified schemas, provider support and test results are not
 implicitly complete; cloud creation/apply and activation remain separate.
 
+## Azure DevOps Pipeline Delivery
+
+The subsequent request to construct and deploy CI/CD targets
+**Contoso-University / Fabric**. Definitions are registered in
+`\healthcare-data-ingestion`: **33** `healthcare-ingestion-ci`, **34**
+`healthcare-ingestion-infrastructure`, **35** `healthcare-ingestion-release`.
+Delivery definitions reference CI 33; release references infrastructure 34.
+Only the new relevant definitions were added to existing connection permissions.
+
+The implementation is pushed to `build/healthcare-ado-delivery` with GitHub PR **#1**.
+Actual hosted CI run **1127** validates that PR. Server-side compilation of all three
+YAML definitions passed. These are deployed **ADO definitions**, not deployed
+Azure/Fabric workloads. Initial infrastructure delivery requires successful CI for
+the exact reviewed main commit, actual Secure File inputs and saved-plan review.
+No fabricated review, runtime identity or activation evidence is permitted.
+
+Initial foundation apply creates no generator job; after the actual image exists,
+an explicitly provisioned job is manual until live schedule activation is accepted.
+The pipeline order, state ownership, migration and asset-publication boundaries are
+documented in `docs\ingestion\azure-devops-delivery.md`. This does not change the
+**Not Ready for Deployment** status of the Azure/Fabric workload or mark a live
+Terraform plan as validated.
+
 ## Scope
 
 Two Entra-only Azure SQL source servers/databases, synthetic source data, a dedicated

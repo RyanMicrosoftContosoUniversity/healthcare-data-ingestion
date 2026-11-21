@@ -109,7 +109,14 @@ November 21 local checkpoint: full native suite 191 passed / two Windows Spark
 module skips; latest runtime selector 30 passed; final real Linux Spark suite
 10 passed. Ruff, source/wheel build, stable 28/454 exports, CI YAML parsing,
 bootstrap/workload Terraform validation and 51-artifact/37-module bundle hashes
-passed. This records local evidence only; hosted CI and live R53 signoff are pending.
+passed. This records the pre-ADO local checkpoint; live R53 signoff remains pending.
+
+The subsequent Azure DevOps delivery request registered pipelines **33/34/35** in
+**Contoso-University / Fabric**, published review PR **#1** and started actual hosted
+CI **1127**. See `docs\ingestion\azure-devops-delivery.md`. Registering those definitions
+does not provision the SQL/Fabric workload, satisfy live acceptance or approve a
+Terraform plan. The generator now has an explicit foundation/image/manual-job
+sequence so initial provisioning cannot accidentally start the daily schedule.
 
 | Register area | Concrete local deliverables | Still gated |
 | --- | --- | --- |
