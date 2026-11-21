@@ -1,0 +1,117 @@
+name: healthcare-infra-$(Date:yyyyMMdd).$(Rev:r)
+trigger: none
+pr: none
+parameters:
+  - name: ciRunId
+    type: number
+    default: 0
+  - name: module
+    type: string
+    default: workload
+    values: [bootstrap, workload]
+  - name: variablesSecureFile
+    type: string
+    default: ''
+  - name: apply
+    type: boolean
+    default: false
+variables:
+  - name: azureServiceConnection
+    value: fabric-sc
+  - name: planDirectory
+    value: $(Pipeline.Workspace)\terraform-plan
+stages:
+  - stage: Plan
+    jobs:
+      - job: ValidateAndPlan
+        pool:
+          vmImage: windows-2022
+        timeoutInMinutes: 45
+        steps:
+          - checkout: self
+            fetchDepth: 1
+            persistCredentials: false
+          - template: templates/tools.yml
+            parameters:
+              terraform: true
+          - template: templates/release.yml
+            parameters:
+              ciRunId: ${{ parameters.ciRunId }}
+          - ${{ if eq(parameters.variablesSecureFile, '') }}:
+              - pwsh: |
+                  throw 'Upload the reviewed deployment inputs to an ADO Secure File and select variablesSecureFile. No placeholder inputs are permitted.'
+          - ${{ if ne(parameters.variablesSecureFile, '') }}:
+              - task: DownloadSecureFile@1
+                name: inputs
+                inputs:
+                  secureFile: ${{ parameters.variablesSecureFile }}
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: $(azureServiceConnection)
+                  addSpnToEnvironment: true
+                  scriptType: pscore
+                  scriptLocation: scriptPath
+                  scriptPath: scripts\cicd\Invoke-Terraform.ps1
+                  arguments: -Phase Plan -Module ${{ parameters.module }}
+                env:
+                  VARIABLES_FILE: $(inputs.secureFilePath)
+                  RELEASE_ROOT: $(Pipeline.Workspace)\release
+                  PLAN_DIRECTORY: $(planDirectory)
+              - task: PublishPipelineArtifact@1
+                inputs:
+                  targetPath: $(planDirectory)
+                  artifactName: terraform-plan
+  - ${{ if eq(parameters.apply, true) }}:
+      - stage: Review
+        dependsOn: Plan
+        jobs:
+          - job: ReviewActualPlan
+            pool: server
+            timeoutInMinutes: 1440
+            steps:
+              - task: ManualValidation@1
+                timeoutInMinutes: 1430
+                inputs:
+                  notifyUsers: ''
+                  approvers: '[Fabric]\Project Administrators'
+                  allowApproversToApproveTheirOwnRuns: true
+                  instructions: 'Review the saved terraform-plan artifact, resource/cost implications, target subscription and live prerequisites. Resume approves only this exact plan. No deletions/replacements or runtime/alert activation are permitted.'
+                  onTimeout: reject
+      - stage: Apply
+        dependsOn: Review
+        jobs:
+          - job: ApplyReviewedPlan
+            pool:
+              vmImage: windows-2022
+            timeoutInMinutes: 60
+            steps:
+              - checkout: self
+                fetchDepth: 1
+                persistCredentials: false
+              - template: templates/tools.yml
+                parameters:
+                  terraform: true
+              - template: templates/release.yml
+                parameters:
+                  ciRunId: ${{ parameters.ciRunId }}
+              - task: DownloadPipelineArtifact@2
+                inputs:
+                  buildType: current
+                  artifactName: terraform-plan
+                  targetPath: $(planDirectory)
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: $(azureServiceConnection)
+                  addSpnToEnvironment: true
+                  scriptType: pscore
+                  scriptLocation: scriptPath
+                  scriptPath: scripts\cicd\Invoke-Terraform.ps1
+                  arguments: -Phase Apply -Module ${{ parameters.module }}
+                env:
+                  RELEASE_ROOT: $(Pipeline.Workspace)\release
+                  PLAN_DIRECTORY: $(planDirectory)
+              - task: PublishPipelineArtifact@1
+                condition: succeeded()
+                inputs:
+                  targetPath: $(planDirectory)\outputs.json
+                  artifactName: deployment-outputs

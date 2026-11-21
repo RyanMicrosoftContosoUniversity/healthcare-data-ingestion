@@ -15,6 +15,17 @@ then review exact physical definitions. Remaining user decisions are consolidate
 
 ## Accepted Decision: Dedicated Fabric Metadata Workspace
 
+**Latest approval: `discussions\discussed-changes-03.md`.** Remaining recommended
+architectural directions are approved for development; concrete revised SQL,
+migrations/interfaces and tests are engineering deliverables, not another approval
+loop. Original dictionaries below remain baseline, not the revised deployed schema.
+Use output history separate from readiness/attempts, window-aware fenced progress,
+five-minute reconciliation/outbox, compatible pre-activation migrations and pinned
+release resources. Audit target is seven years with active/reference holds;
+temporary artifacts retain their distinct policies. Native Fabric SQL backup/restore
+only; no custom backup system or isolated migration-test database. Terraform apply
+and code-review-governed publication remain separate.
+
 The control store will be a **Fabric SQL Database in a dedicated metadata workspace**,
 separate from the data/ingestion workspace containing the pipelines, notebooks, and
 Bronze/Silver lakehouses. This supersedes the earlier Azure SQL control-database proposal.

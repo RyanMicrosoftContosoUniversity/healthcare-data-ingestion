@@ -1,0 +1,9 @@
+{
+  "version": "v3.4.0",
+  "release_asset_id": 312917735,
+  "url": "https://github.com/synthetichealth/synthea/releases/download/v3.4.0/synthea-with-dependencies.jar",
+  "sha256": "38678aab1e667d26671163824aad60ee5e30fa366f3d59d5ea5765ebb5702432",
+  "jar_path": "generator/synthea-v3.4.0.jar",
+  "seed": 20261120,
+  "verification": "Primary GitHub release API asset digest; image build verifies downloaded bytes."
+}

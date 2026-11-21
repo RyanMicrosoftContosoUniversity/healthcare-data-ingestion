@@ -2,16 +2,58 @@
 
 ## Status
 
-Preparation paused at explicit review gates. No deployment is approved until the target configuration and the corresponding infrastructure plan are reviewed.
+Development and infrastructure preparation are authorized by
+`discussions\discussed-changes-03.md` and the November 20 instruction to consolidate
+the decisions and perform the development work. Architectural directions are
+approved; concrete implementation specifications and validation evidence must now
+be produced. No infrastructure deployment is approved until the actual target
+configuration and costed Terraform plan are reviewed.
 
-Local source preparation remains approved. The November 19-20 discussions approve
-architecture behavior and logical model revisions, not finalized physical schemas or
-deployment inputs. This reconciliation is documentation only; no new runtime or cloud
-deployment is authorized.
+Preserve the 28-source Bronze and Clarity Patient Silver scope. Use Outlook/email,
+five-minute single-owner reconciliation, seven-year execution/readiness audit target,
+native Fabric SQL backup/restore, PR/code-review-governed releases and protected
+reference-aware retention. Do not add Teams, custom backup infrastructure, an
+isolated migration-test database, detailed cost attribution or a new task-by-task
+approval loop. Unverified schemas, provider support and test results are not
+implicitly complete; cloud creation/apply and activation remain separate.
 
 ## Scope
 
-Two Entra-only Azure SQL source servers/databases, synthetic source data, and, after framework-design approval, a dedicated Fabric metadata workspace/SQL database plus the separate Fabric ingestion workspace, Bronze platform, patient Silver slice, utilities, and observability.
+Two Entra-only Azure SQL source servers/databases, synthetic source data, a dedicated
+Fabric metadata workspace/SQL database, separate data workspace, all-table Bronze,
+Patient Silver, utilities and observability. Handoff03 authorizes local implementation;
+the actual infrastructure plan and live activation remain unapproved.
+
+## Prepared Implementation and Remaining Live Gates
+
+Local implementation includes the 28/454 source contracts, independent generator,
+versioned source/metadata migrations, waiting bindings, real source coverage, fenced
+capture/publication recovery, Patient transformations, quarantine evidence, isolated
+benchmarks, diagnostic collectors and immutable notebook/DAG release preparation.
+The logical workflows remain Clarity Bronze, Caboodle Bronze and Patient Silver;
+the five-minute reconciliation DAG is maintenance, not another business domain.
+
+Terraform prepares per-release environments and notebooks with actual lakehouse/environment
+tokens, scoped generator container roles, required job environment variables, $8/$10
+generator budget notifications and disabled-by-default operational alerts. Bootstrap
+owns the resource group/state storage; the workload configuration reads that resource
+group rather than managing it twice. State bootstrap must be reviewed separately,
+and its local initial state retained securely until migrated to the protected backend.
+
+**Not Ready for Deployment:** no reviewed actual Terraform plan, confirmed email/admin
+IP, immutable published registry image, resolved runtime certificate principals/delivery
+or live acceptance evidence exists. Certificate-backed SQL identities must be real Entra
+service principals with reviewed database/Blob/Fabric permissions; the Terraform-created
+UAIs/workspace identities are not automatically interchangeable with certificate credentials.
+Do not invent identity IDs, use personal-token fallback or place private keys in state.
+
+Live checks include SQL migration/locking/negative permissions, ODBC18 availability in
+both driver environments, Fabric capacity headroom, API/library publication/Airflow
+recognition, source expected-slot binding, all-28-table reconciliation, the 1,000-patient
+seed/one-hour daily target, consumption acknowledgement/cleanup and real email delivery.
+Retained history missing its protected manifest/data fails explicitly; no current substitution.
+Some Airflow file/environment APIs remain beta. Stable environment library upload/publish
+requests are prepared separately from Terraform's infrastructure ownership.
 
 ## Authoritative References
 
@@ -23,11 +65,17 @@ Two Entra-only Azure SQL source servers/databases, synthetic source data, and, a
 - Required schema-discovery process review: `docs\ingestion\schema-discovery-design.md`.
 - Reconciled approval record: `discussions\discussed-changes.md`.
 - Later consolidated decisions: `discussions\discussion-02.md` (supersedes conflicting earlier proposals).
+- Latest approval/development handoff: `discussions\discussed-changes-03.md`; later explicit decisions supersede conflicting earlier proposals.
 - Orchestration/release design and open schema assessment: `docs\architecture\orchestration-design.md`.
 - Logical task/dataset revision: `docs\ingestion\task-dataset-design.md`.
 - Consolidated remaining decisions and gates: `docs\architecture\build-decisions.md`.
 
 ## Confirmed Decisions
+
+The detailed bullets below preserve the November 20 setup checkpoint. References
+there to pending physical-schema implementation/review are historical and superseded
+by Handoff 03 and the prepared implementation above. They are not new user decisions
+or vetoes on local development. Actual costed-plan review and live activation remain gated.
 
 - All nine setup/operating groups B01-B09 approved November 20 by the user's "I approve all." The complete approved settings are in `docs\architecture\build-decisions.md`. This closes routine setup choices, not the remaining physical framework/Patient Silver contract or infrastructure/Terraform-plan review gates.
 - Approved batch deployment settings: demo only; Airflow in `healthcare-data-ingestion-data` on `uswest3capacity`, with Clarity Bronze, Caboodle Bronze and Patient Silver logical DAGs. Derive remaining valid names from the project prefix. Isolate non-expiring `terraform-state` storage from generator access and cleanup.

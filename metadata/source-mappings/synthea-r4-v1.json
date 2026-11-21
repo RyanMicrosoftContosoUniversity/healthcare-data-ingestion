@@ -1,0 +1,2005 @@
+{
+  "input": "synthetic-clinical-v1",
+  "mapping_version": "1.1.0",
+  "policies": {
+    "caboodle_vitals": "retained in population; no approved Caboodle vital fact",
+    "decimal_rounding": "ROUND_HALF_UP to approved SQL scale; raw FHIR remains exact",
+    "history": "baseline plus explicitly recorded changes; no inferred prior versions",
+    "missing_optional_clinical": "explicit-null",
+    "missing_required_clinical": "reject",
+    "supplemental": "synthetic_fhir.py and synthetic_population.py named rules",
+    "unknown_resource": "reject"
+  },
+  "sources": {
+    "Caboodle": {
+      "contract_sha256": "3c9e1befd96d7088cc0de5621c4110bfa00f97b2991106dc25b5bec548aa5ba4",
+      "tables": {
+        "DimCoverage": {
+          "columns": {
+            "CoverageKey": {
+              "field": "CoverageKey",
+              "op": "field"
+            },
+            "CoverageNumber": {
+              "field": "CoverageNumber",
+              "op": "field"
+            },
+            "CoverageStatus": {
+              "field": "CoverageStatus",
+              "op": "field"
+            },
+            "CoverageTypeCode": {
+              "field": "CoverageTypeCode",
+              "op": "field"
+            },
+            "EffectiveDate": {
+              "field": "EffectiveDate",
+              "op": "field"
+            },
+            "EffectiveFromUtc": {
+              "field": "EffectiveFromUtc",
+              "op": "field"
+            },
+            "EffectiveToUtc": {
+              "field": "EffectiveToUtc",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsCurrent": {
+              "field": "IsCurrent",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PayerCode": {
+              "field": "PayerCode",
+              "op": "field"
+            },
+            "PayerName": {
+              "field": "PayerName",
+              "op": "field"
+            },
+            "PlanCode": {
+              "field": "PlanCode",
+              "op": "field"
+            },
+            "PlanName": {
+              "field": "PlanName",
+              "op": "field"
+            },
+            "SourceCoverageID": {
+              "field": "SourceCoverageID",
+              "op": "field"
+            },
+            "SourcePatientID": {
+              "field": "SourcePatientID",
+              "op": "field"
+            },
+            "TerminationDate": {
+              "field": "TerminationDate",
+              "op": "field"
+            }
+          },
+          "input_table": "Coverage"
+        },
+        "DimDate": {
+          "columns": {
+            "CalendarDate": {
+              "field": "CalendarDate",
+              "op": "field"
+            },
+            "CalendarQuarter": {
+              "field": "CalendarQuarter",
+              "op": "field"
+            },
+            "CalendarYear": {
+              "field": "CalendarYear",
+              "op": "field"
+            },
+            "DateKey": {
+              "field": "DateKey",
+              "op": "field"
+            },
+            "DayOfMonth": {
+              "field": "DayOfMonth",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsWeekend": {
+              "field": "IsWeekend",
+              "op": "field"
+            },
+            "IsoDayOfWeek": {
+              "field": "IsoDayOfWeek",
+              "op": "field"
+            },
+            "MonthName": {
+              "field": "MonthName",
+              "op": "field"
+            },
+            "MonthNumber": {
+              "field": "MonthNumber",
+              "op": "field"
+            }
+          },
+          "input_table": "Calendar"
+        },
+        "DimDepartment": {
+          "columns": {
+            "DepartmentCode": {
+              "field": "DepartmentCode",
+              "op": "field"
+            },
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "DepartmentName": {
+              "field": "DepartmentName",
+              "op": "field"
+            },
+            "DepartmentTypeCode": {
+              "field": "DepartmentTypeCode",
+              "op": "field"
+            },
+            "EffectiveFromUtc": {
+              "field": "EffectiveFromUtc",
+              "op": "field"
+            },
+            "EffectiveToUtc": {
+              "field": "EffectiveToUtc",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "FacilityCode": {
+              "field": "FacilityCode",
+              "op": "field"
+            },
+            "IsActive": {
+              "field": "IsActive",
+              "op": "field"
+            },
+            "IsCurrent": {
+              "field": "IsCurrent",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "SourceDepartmentID": {
+              "field": "SourceDepartmentID",
+              "op": "field"
+            }
+          },
+          "input_table": "Department"
+        },
+        "DimDiagnosis": {
+          "columns": {
+            "DiagnosisCode": {
+              "field": "DiagnosisCode",
+              "op": "field"
+            },
+            "DiagnosisCodeSystem": {
+              "field": "DiagnosisCodeSystem",
+              "op": "field"
+            },
+            "DiagnosisDescription": {
+              "field": "DiagnosisDescription",
+              "op": "field"
+            },
+            "DiagnosisKey": {
+              "field": "DiagnosisKey",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            }
+          },
+          "input_table": "Diagnosis"
+        },
+        "DimMedication": {
+          "columns": {
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "MedicationCode": {
+              "field": "MedicationCode",
+              "op": "field"
+            },
+            "MedicationCodeSystem": {
+              "field": "MedicationCodeSystem",
+              "op": "field"
+            },
+            "MedicationKey": {
+              "field": "MedicationKey",
+              "op": "field"
+            },
+            "MedicationName": {
+              "field": "MedicationName",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            }
+          },
+          "input_table": "MedicationOrder"
+        },
+        "DimPatient": {
+          "columns": {
+            "AdministrativeSexCode": {
+              "field": "AdministrativeSexCode",
+              "op": "field"
+            },
+            "BirthDate": {
+              "field": "BirthDate",
+              "op": "field"
+            },
+            "City": {
+              "field": "City",
+              "op": "field"
+            },
+            "DeathDate": {
+              "field": "DeathDate",
+              "op": "field"
+            },
+            "EffectiveFromUtc": {
+              "field": "EffectiveFromUtc",
+              "op": "field"
+            },
+            "EffectiveToUtc": {
+              "field": "EffectiveToUtc",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "FirstName": {
+              "field": "FirstName",
+              "op": "field"
+            },
+            "IsCurrent": {
+              "field": "IsCurrent",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "LastName": {
+              "field": "LastName",
+              "op": "field"
+            },
+            "MedicalRecordNumber": {
+              "field": "MedicalRecordNumber",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "PatientStatus": {
+              "field": "PatientStatus",
+              "op": "field"
+            },
+            "PostalCode": {
+              "field": "PostalCode",
+              "op": "field"
+            },
+            "SourcePatientID": {
+              "field": "SourcePatientID",
+              "op": "field"
+            },
+            "StateCode": {
+              "field": "StateCode",
+              "op": "field"
+            }
+          },
+          "input_table": "Patient"
+        },
+        "DimProcedure": {
+          "columns": {
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "ProcedureCode": {
+              "field": "ProcedureCode",
+              "op": "field"
+            },
+            "ProcedureCodeSystem": {
+              "field": "ProcedureCodeSystem",
+              "op": "field"
+            },
+            "ProcedureDescription": {
+              "field": "ProcedureDescription",
+              "op": "field"
+            },
+            "ProcedureKey": {
+              "field": "ProcedureKey",
+              "op": "field"
+            }
+          },
+          "input_table": "Procedure"
+        },
+        "DimProvider": {
+          "columns": {
+            "DisplayName": {
+              "field": "DisplayName",
+              "op": "field"
+            },
+            "EffectiveFromUtc": {
+              "field": "EffectiveFromUtc",
+              "op": "field"
+            },
+            "EffectiveToUtc": {
+              "field": "EffectiveToUtc",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsActive": {
+              "field": "IsActive",
+              "op": "field"
+            },
+            "IsCurrent": {
+              "field": "IsCurrent",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "ProviderCode": {
+              "field": "ProviderCode",
+              "op": "field"
+            },
+            "ProviderKey": {
+              "field": "ProviderKey",
+              "op": "field"
+            },
+            "ProviderTypeCode": {
+              "field": "ProviderTypeCode",
+              "op": "field"
+            },
+            "SourceProviderID": {
+              "field": "SourceProviderID",
+              "op": "field"
+            },
+            "SpecialtyCode": {
+              "field": "SpecialtyCode",
+              "op": "field"
+            }
+          },
+          "input_table": "Provider"
+        },
+        "FactAppointment": {
+          "columns": {
+            "AppointmentCount": {
+              "op": "constant",
+              "value": 1
+            },
+            "AppointmentKey": {
+              "field": "AppointmentKey",
+              "op": "field"
+            },
+            "AppointmentNumber": {
+              "field": "AppointmentNumber",
+              "op": "field"
+            },
+            "AppointmentStatus": {
+              "field": "AppointmentStatus",
+              "op": "field"
+            },
+            "AppointmentTypeCode": {
+              "field": "AppointmentTypeCode",
+              "op": "field"
+            },
+            "CanceledAtUtc": {
+              "field": "CanceledAtUtc",
+              "op": "field"
+            },
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "ProviderKey": {
+              "field": "ProviderKey",
+              "op": "field"
+            },
+            "ScheduledDateKey": {
+              "field": "ScheduledStartAtUtc",
+              "op": "datekey"
+            },
+            "ScheduledDurationMinutes": {
+              "end": "ScheduledEndAtUtc",
+              "op": "minutes",
+              "start": "ScheduledStartAtUtc"
+            },
+            "ScheduledEndAtUtc": {
+              "field": "ScheduledEndAtUtc",
+              "op": "field"
+            },
+            "ScheduledStartAtUtc": {
+              "field": "ScheduledStartAtUtc",
+              "op": "field"
+            },
+            "SourceAppointmentID": {
+              "field": "SourceAppointmentID",
+              "op": "field"
+            },
+            "SourceEncounterID": {
+              "field": "SourceEncounterID",
+              "op": "field"
+            }
+          },
+          "input_table": "Appointment"
+        },
+        "FactDiagnosis": {
+          "columns": {
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "DiagnosedAtUtc": {
+              "field": "DiagnosedAtUtc",
+              "op": "field"
+            },
+            "DiagnosingProviderKey": {
+              "field": "DiagnosingProviderKey",
+              "op": "field"
+            },
+            "DiagnosisCount": {
+              "op": "constant",
+              "value": 1
+            },
+            "DiagnosisDateKey": {
+              "field": "DiagnosedAtUtc",
+              "op": "datekey"
+            },
+            "DiagnosisFactKey": {
+              "field": "DiagnosisFactKey",
+              "op": "field"
+            },
+            "DiagnosisKey": {
+              "field": "DiagnosisKey",
+              "op": "field"
+            },
+            "DiagnosisSequence": {
+              "field": "DiagnosisSequence",
+              "op": "field"
+            },
+            "DiagnosisStatus": {
+              "field": "DiagnosisStatus",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "IsPrimary": {
+              "field": "IsPrimary",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "SourceDiagnosisID": {
+              "field": "SourceDiagnosisID",
+              "op": "field"
+            },
+            "SourceEncounterID": {
+              "field": "SourceEncounterID",
+              "op": "field"
+            }
+          },
+          "input_table": "Diagnosis"
+        },
+        "FactEncounter": {
+          "columns": {
+            "ArrivalAtUtc": {
+              "field": "ArrivalAtUtc",
+              "op": "field"
+            },
+            "ArrivalDateKey": {
+              "field": "ArrivalAtUtc",
+              "op": "datekey"
+            },
+            "AttendingProviderKey": {
+              "field": "AttendingProviderKey",
+              "op": "field"
+            },
+            "CoverageKey": {
+              "field": "CoverageKey",
+              "op": "field"
+            },
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "DischargeAtUtc": {
+              "field": "DischargeAtUtc",
+              "op": "field"
+            },
+            "DischargeDateKey": {
+              "field": "DischargeAtUtc",
+              "op": "datekey"
+            },
+            "DischargeDispositionCode": {
+              "field": "DischargeDispositionCode",
+              "op": "field"
+            },
+            "EncounterCount": {
+              "op": "constant",
+              "value": 1
+            },
+            "EncounterKey": {
+              "field": "EncounterKey",
+              "op": "field"
+            },
+            "EncounterNumber": {
+              "field": "EncounterNumber",
+              "op": "field"
+            },
+            "EncounterStatus": {
+              "field": "EncounterStatus",
+              "op": "field"
+            },
+            "EncounterTypeCode": {
+              "field": "EncounterTypeCode",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "LengthOfStayMinutes": {
+              "end": "DischargeAtUtc",
+              "op": "minutes",
+              "start": "ArrivalAtUtc"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "SourceEncounterID": {
+              "field": "SourceEncounterID",
+              "op": "field"
+            }
+          },
+          "input_table": "Encounter"
+        },
+        "FactLabResult": {
+          "columns": {
+            "AbnormalFlag": {
+              "field": "AbnormalFlag",
+              "op": "field"
+            },
+            "ComponentCode": {
+              "field": "ComponentCode",
+              "op": "field"
+            },
+            "ComponentName": {
+              "field": "ComponentName",
+              "op": "field"
+            },
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "LabResultKey": {
+              "field": "LabResultKey",
+              "op": "field"
+            },
+            "NumericValue": {
+              "field": "NumericValue",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 6
+            },
+            "OrderedAtUtc": {
+              "field": "OrderedAtUtc",
+              "op": "field"
+            },
+            "OrderedDateKey": {
+              "field": "OrderedAtUtc",
+              "op": "datekey"
+            },
+            "OrderingProviderKey": {
+              "field": "OrderingProviderKey",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "ReferenceHigh": {
+              "field": "ReferenceHigh",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 6
+            },
+            "ReferenceLow": {
+              "field": "ReferenceLow",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 6
+            },
+            "ResultCount": {
+              "op": "constant",
+              "value": 1
+            },
+            "ResultDateKey": {
+              "field": "ResultedAtUtc",
+              "op": "datekey"
+            },
+            "ResultStatus": {
+              "field": "ResultStatus",
+              "op": "field"
+            },
+            "ResultUnit": {
+              "field": "ResultUnit",
+              "op": "field"
+            },
+            "ResultedAtUtc": {
+              "field": "ResultedAtUtc",
+              "op": "field"
+            },
+            "SourceEncounterID": {
+              "field": "SourceEncounterID",
+              "op": "field"
+            },
+            "SourceLaboratoryOrderID": {
+              "field": "SourceLaboratoryOrderID",
+              "op": "field"
+            },
+            "SourceLaboratoryResultID": {
+              "field": "SourceLaboratoryResultID",
+              "op": "field"
+            },
+            "TestCode": {
+              "field": "TestCode",
+              "op": "field"
+            },
+            "TextValue": {
+              "field": "TextValue",
+              "op": "field"
+            }
+          },
+          "input_table": "LaboratoryResult"
+        },
+        "FactMedicationAdministration": {
+          "columns": {
+            "AdministeredAtUtc": {
+              "field": "AdministeredAtUtc",
+              "op": "field"
+            },
+            "AdministeredDose": {
+              "field": "AdministeredDose",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 4
+            },
+            "AdministeringProviderKey": {
+              "field": "AdministeringProviderKey",
+              "op": "field"
+            },
+            "AdministrationDateKey": {
+              "field": "AdministeredAtUtc",
+              "op": "datekey"
+            },
+            "AdministrationEventCount": {
+              "op": "constant",
+              "value": 1
+            },
+            "AdministrationStatus": {
+              "field": "AdministrationStatus",
+              "op": "field"
+            },
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "DoseUnit": {
+              "field": "DoseUnit",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "MedicationAdministrationKey": {
+              "field": "MedicationAdministrationKey",
+              "op": "field"
+            },
+            "MedicationKey": {
+              "field": "MedicationKey",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "RecordedAtUtc": {
+              "field": "RecordedAtUtc",
+              "op": "field"
+            },
+            "RecordedDateKey": {
+              "field": "RecordedAtUtc",
+              "op": "datekey"
+            },
+            "ScheduledAtUtc": {
+              "field": "ScheduledAtUtc",
+              "op": "field"
+            },
+            "SourceEncounterID": {
+              "field": "SourceEncounterID",
+              "op": "field"
+            },
+            "SourceMedicationAdministrationID": {
+              "field": "SourceMedicationAdministrationID",
+              "op": "field"
+            },
+            "SourceMedicationOrderID": {
+              "field": "SourceMedicationOrderID",
+              "op": "field"
+            }
+          },
+          "input_table": "MedicationAdministration"
+        },
+        "FactMedicationOrder": {
+          "columns": {
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "DoseUnit": {
+              "field": "DoseUnit",
+              "op": "field"
+            },
+            "EndAtUtc": {
+              "field": "EndAtUtc",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "FrequencyCode": {
+              "field": "FrequencyCode",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "MedicationKey": {
+              "field": "MedicationKey",
+              "op": "field"
+            },
+            "MedicationOrderKey": {
+              "field": "MedicationOrderKey",
+              "op": "field"
+            },
+            "OrderCount": {
+              "op": "constant",
+              "value": 1
+            },
+            "OrderStatus": {
+              "field": "OrderStatus",
+              "op": "field"
+            },
+            "OrderedAtUtc": {
+              "field": "OrderedAtUtc",
+              "op": "field"
+            },
+            "OrderedDateKey": {
+              "field": "OrderedAtUtc",
+              "op": "datekey"
+            },
+            "OrderedDose": {
+              "field": "OrderedDose",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 4
+            },
+            "OrderingProviderKey": {
+              "field": "OrderingProviderKey",
+              "op": "field"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "RouteCode": {
+              "field": "RouteCode",
+              "op": "field"
+            },
+            "SourceEncounterID": {
+              "field": "SourceEncounterID",
+              "op": "field"
+            },
+            "SourceMedicationOrderID": {
+              "field": "SourceMedicationOrderID",
+              "op": "field"
+            },
+            "StartAtUtc": {
+              "field": "StartAtUtc",
+              "op": "field"
+            }
+          },
+          "input_table": "MedicationOrder"
+        },
+        "FactProcedure": {
+          "columns": {
+            "DepartmentKey": {
+              "field": "DepartmentKey",
+              "op": "field"
+            },
+            "EtlBatchID": {
+              "field": "EtlBatchID",
+              "op": "field"
+            },
+            "EtlCreatedAtUtc": {
+              "field": "EtlCreatedAtUtc",
+              "op": "field"
+            },
+            "EtlModifiedAtUtc": {
+              "field": "EtlModifiedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "OrderedAtUtc": {
+              "field": "OrderedAtUtc",
+              "op": "field"
+            },
+            "OrderedDateKey": {
+              "field": "OrderedAtUtc",
+              "op": "datekey"
+            },
+            "OriginModifiedAtUtc": {
+              "field": "OriginModifiedAtUtc",
+              "op": "field"
+            },
+            "OriginSystem": {
+              "field": "OriginSystem",
+              "op": "field"
+            },
+            "PatientKey": {
+              "field": "PatientKey",
+              "op": "field"
+            },
+            "PerformedAtUtc": {
+              "field": "PerformedAtUtc",
+              "op": "field"
+            },
+            "PerformedDateKey": {
+              "field": "PerformedAtUtc",
+              "op": "datekey"
+            },
+            "PerformingProviderKey": {
+              "field": "PerformingProviderKey",
+              "op": "field"
+            },
+            "ProcedureCount": {
+              "op": "constant",
+              "value": 1
+            },
+            "ProcedureFactKey": {
+              "field": "ProcedureFactKey",
+              "op": "field"
+            },
+            "ProcedureKey": {
+              "field": "ProcedureKey",
+              "op": "field"
+            },
+            "ProcedureStatus": {
+              "field": "ProcedureStatus",
+              "op": "field"
+            },
+            "SourceEncounterID": {
+              "field": "SourceEncounterID",
+              "op": "field"
+            },
+            "SourceProcedureID": {
+              "field": "SourceProcedureID",
+              "op": "field"
+            }
+          },
+          "input_table": "Procedure"
+        }
+      }
+    },
+    "Clarity": {
+      "contract_sha256": "72823b8a4f5944eebae819fe7958cec395f4ac7d9a64b59ceb2c8f9fb08eaf0a",
+      "tables": {
+        "Appointment": {
+          "columns": {
+            "AppointmentID": {
+              "field": "AppointmentID",
+              "op": "field"
+            },
+            "AppointmentNumber": {
+              "field": "AppointmentNumber",
+              "op": "field"
+            },
+            "AppointmentStatus": {
+              "field": "AppointmentStatus",
+              "op": "field"
+            },
+            "AppointmentTypeCode": {
+              "field": "AppointmentTypeCode",
+              "op": "field"
+            },
+            "CanceledAtUtc": {
+              "field": "CanceledAtUtc",
+              "op": "field"
+            },
+            "CancellationReason": {
+              "field": "CancellationReason",
+              "op": "field"
+            },
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "DepartmentID": {
+              "field": "DepartmentID",
+              "op": "field"
+            },
+            "EncounterID": {
+              "field": "EncounterID",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "PatientID": {
+              "field": "PatientID",
+              "op": "field"
+            },
+            "ProviderID": {
+              "field": "ProviderID",
+              "op": "field"
+            },
+            "ScheduledEndAtUtc": {
+              "field": "ScheduledEndAtUtc",
+              "op": "field"
+            },
+            "ScheduledStartAtUtc": {
+              "field": "ScheduledStartAtUtc",
+              "op": "field"
+            }
+          },
+          "input_table": "Appointment"
+        },
+        "Coverage": {
+          "columns": {
+            "CoverageID": {
+              "field": "CoverageID",
+              "op": "field"
+            },
+            "CoverageNumber": {
+              "field": "CoverageNumber",
+              "op": "field"
+            },
+            "CoverageStatus": {
+              "field": "CoverageStatus",
+              "op": "field"
+            },
+            "CoverageTypeCode": {
+              "field": "CoverageTypeCode",
+              "op": "field"
+            },
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "EffectiveDate": {
+              "field": "EffectiveDate",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "PatientID": {
+              "field": "PatientID",
+              "op": "field"
+            },
+            "PayerCode": {
+              "field": "PayerCode",
+              "op": "field"
+            },
+            "PayerName": {
+              "field": "PayerName",
+              "op": "field"
+            },
+            "PlanCode": {
+              "field": "PlanCode",
+              "op": "field"
+            },
+            "PlanName": {
+              "field": "PlanName",
+              "op": "field"
+            },
+            "TerminationDate": {
+              "field": "TerminationDate",
+              "op": "field"
+            }
+          },
+          "input_table": "Coverage"
+        },
+        "Department": {
+          "columns": {
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "DepartmentCode": {
+              "field": "DepartmentCode",
+              "op": "field"
+            },
+            "DepartmentID": {
+              "field": "DepartmentID",
+              "op": "field"
+            },
+            "DepartmentName": {
+              "field": "DepartmentName",
+              "op": "field"
+            },
+            "DepartmentTypeCode": {
+              "field": "DepartmentTypeCode",
+              "op": "field"
+            },
+            "FacilityCode": {
+              "field": "FacilityCode",
+              "op": "field"
+            },
+            "IsActive": {
+              "field": "IsActive",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            }
+          },
+          "input_table": "Department"
+        },
+        "Diagnosis": {
+          "columns": {
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "DiagnosedAtUtc": {
+              "field": "DiagnosedAtUtc",
+              "op": "field"
+            },
+            "DiagnosingProviderID": {
+              "field": "DiagnosingProviderID",
+              "op": "field"
+            },
+            "DiagnosisCode": {
+              "field": "DiagnosisCode",
+              "op": "field"
+            },
+            "DiagnosisCodeSystem": {
+              "field": "DiagnosisCodeSystem",
+              "op": "field"
+            },
+            "DiagnosisDescription": {
+              "field": "DiagnosisDescription",
+              "op": "field"
+            },
+            "DiagnosisID": {
+              "field": "DiagnosisID",
+              "op": "field"
+            },
+            "DiagnosisSequence": {
+              "field": "DiagnosisSequence",
+              "op": "field"
+            },
+            "DiagnosisStatus": {
+              "field": "DiagnosisStatus",
+              "op": "field"
+            },
+            "EncounterID": {
+              "field": "EncounterID",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "IsPrimary": {
+              "field": "IsPrimary",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            }
+          },
+          "input_table": "Diagnosis"
+        },
+        "Encounter": {
+          "columns": {
+            "ArrivalAtUtc": {
+              "field": "ArrivalAtUtc",
+              "op": "field"
+            },
+            "AttendingProviderID": {
+              "field": "AttendingProviderID",
+              "op": "field"
+            },
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "DepartmentID": {
+              "field": "DepartmentID",
+              "op": "field"
+            },
+            "DischargeAtUtc": {
+              "field": "DischargeAtUtc",
+              "op": "field"
+            },
+            "DischargeDispositionCode": {
+              "field": "DischargeDispositionCode",
+              "op": "field"
+            },
+            "EncounterID": {
+              "field": "EncounterID",
+              "op": "field"
+            },
+            "EncounterNumber": {
+              "field": "EncounterNumber",
+              "op": "field"
+            },
+            "EncounterStatus": {
+              "field": "EncounterStatus",
+              "op": "field"
+            },
+            "EncounterTypeCode": {
+              "field": "EncounterTypeCode",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "PatientID": {
+              "field": "PatientID",
+              "op": "field"
+            },
+            "PrimaryCoverageID": {
+              "field": "PrimaryCoverageID",
+              "op": "field"
+            }
+          },
+          "input_table": "Encounter"
+        },
+        "LaboratoryOrder": {
+          "columns": {
+            "CollectedAtUtc": {
+              "field": "CollectedAtUtc",
+              "op": "field"
+            },
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "EncounterID": {
+              "field": "EncounterID",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "LaboratoryOrderID": {
+              "field": "LaboratoryOrderID",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "OrderNumber": {
+              "field": "OrderNumber",
+              "op": "field"
+            },
+            "OrderStatus": {
+              "field": "OrderStatus",
+              "op": "field"
+            },
+            "OrderedAtUtc": {
+              "field": "OrderedAtUtc",
+              "op": "field"
+            },
+            "OrderingProviderID": {
+              "field": "OrderingProviderID",
+              "op": "field"
+            },
+            "SpecimenTypeCode": {
+              "field": "SpecimenTypeCode",
+              "op": "field"
+            },
+            "TestCode": {
+              "field": "TestCode",
+              "op": "field"
+            },
+            "TestName": {
+              "field": "TestName",
+              "op": "field"
+            }
+          },
+          "input_table": "LaboratoryOrder"
+        },
+        "LaboratoryResult": {
+          "columns": {
+            "AbnormalFlag": {
+              "field": "AbnormalFlag",
+              "op": "field"
+            },
+            "ComponentCode": {
+              "field": "ComponentCode",
+              "op": "field"
+            },
+            "ComponentName": {
+              "field": "ComponentName",
+              "op": "field"
+            },
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "LaboratoryOrderID": {
+              "field": "LaboratoryOrderID",
+              "op": "field"
+            },
+            "LaboratoryResultID": {
+              "field": "LaboratoryResultID",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "NumericValue": {
+              "field": "NumericValue",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 6
+            },
+            "ReferenceHigh": {
+              "field": "ReferenceHigh",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 6
+            },
+            "ReferenceLow": {
+              "field": "ReferenceLow",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 6
+            },
+            "ResultStatus": {
+              "field": "ResultStatus",
+              "op": "field"
+            },
+            "ResultUnit": {
+              "field": "ResultUnit",
+              "op": "field"
+            },
+            "ResultedAtUtc": {
+              "field": "ResultedAtUtc",
+              "op": "field"
+            },
+            "TextValue": {
+              "field": "TextValue",
+              "op": "field"
+            }
+          },
+          "input_table": "LaboratoryResult"
+        },
+        "MedicationAdministration": {
+          "columns": {
+            "AdministeredAtUtc": {
+              "field": "AdministeredAtUtc",
+              "op": "field"
+            },
+            "AdministeredDose": {
+              "field": "AdministeredDose",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 4
+            },
+            "AdministeringProviderID": {
+              "field": "AdministeringProviderID",
+              "op": "field"
+            },
+            "AdministrationStatus": {
+              "field": "AdministrationStatus",
+              "op": "field"
+            },
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "DoseUnit": {
+              "field": "DoseUnit",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "MedicationAdministrationID": {
+              "field": "MedicationAdministrationID",
+              "op": "field"
+            },
+            "MedicationOrderID": {
+              "field": "MedicationOrderID",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "NotGivenReason": {
+              "field": "NotGivenReason",
+              "op": "field"
+            },
+            "RecordedAtUtc": {
+              "field": "RecordedAtUtc",
+              "op": "field"
+            },
+            "ScheduledAtUtc": {
+              "field": "ScheduledAtUtc",
+              "op": "field"
+            }
+          },
+          "input_table": "MedicationAdministration"
+        },
+        "MedicationOrder": {
+          "columns": {
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "DoseUnit": {
+              "field": "DoseUnit",
+              "op": "field"
+            },
+            "EncounterID": {
+              "field": "EncounterID",
+              "op": "field"
+            },
+            "EndAtUtc": {
+              "field": "EndAtUtc",
+              "op": "field"
+            },
+            "FrequencyCode": {
+              "field": "FrequencyCode",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "MedicationCode": {
+              "field": "MedicationCode",
+              "op": "field"
+            },
+            "MedicationCodeSystem": {
+              "field": "MedicationCodeSystem",
+              "op": "field"
+            },
+            "MedicationName": {
+              "field": "MedicationName",
+              "op": "field"
+            },
+            "MedicationOrderID": {
+              "field": "MedicationOrderID",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "OrderStatus": {
+              "field": "OrderStatus",
+              "op": "field"
+            },
+            "OrderedAtUtc": {
+              "field": "OrderedAtUtc",
+              "op": "field"
+            },
+            "OrderedDose": {
+              "field": "OrderedDose",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 4
+            },
+            "OrderingProviderID": {
+              "field": "OrderingProviderID",
+              "op": "field"
+            },
+            "RouteCode": {
+              "field": "RouteCode",
+              "op": "field"
+            },
+            "StartAtUtc": {
+              "field": "StartAtUtc",
+              "op": "field"
+            }
+          },
+          "input_table": "MedicationOrder"
+        },
+        "Patient": {
+          "columns": {
+            "AdministrativeSexCode": {
+              "field": "AdministrativeSexCode",
+              "op": "field"
+            },
+            "BirthDate": {
+              "field": "BirthDate",
+              "op": "field"
+            },
+            "City": {
+              "field": "City",
+              "op": "field"
+            },
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeathDate": {
+              "field": "DeathDate",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "FirstName": {
+              "field": "FirstName",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "LastName": {
+              "field": "LastName",
+              "op": "field"
+            },
+            "MedicalRecordNumber": {
+              "field": "MedicalRecordNumber",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "PatientID": {
+              "field": "PatientID",
+              "op": "field"
+            },
+            "PatientStatus": {
+              "field": "PatientStatus",
+              "op": "field"
+            },
+            "PostalCode": {
+              "field": "PostalCode",
+              "op": "field"
+            },
+            "StateCode": {
+              "field": "StateCode",
+              "op": "field"
+            }
+          },
+          "input_table": "Patient"
+        },
+        "Procedure": {
+          "columns": {
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "EncounterID": {
+              "field": "EncounterID",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "OrderedAtUtc": {
+              "field": "OrderedAtUtc",
+              "op": "field"
+            },
+            "PerformedAtUtc": {
+              "field": "PerformedAtUtc",
+              "op": "field"
+            },
+            "PerformingProviderID": {
+              "field": "PerformingProviderID",
+              "op": "field"
+            },
+            "ProcedureCode": {
+              "field": "ProcedureCode",
+              "op": "field"
+            },
+            "ProcedureCodeSystem": {
+              "field": "ProcedureCodeSystem",
+              "op": "field"
+            },
+            "ProcedureDescription": {
+              "field": "ProcedureDescription",
+              "op": "field"
+            },
+            "ProcedureID": {
+              "field": "ProcedureID",
+              "op": "field"
+            },
+            "ProcedureStatus": {
+              "field": "ProcedureStatus",
+              "op": "field"
+            }
+          },
+          "input_table": "Procedure"
+        },
+        "Provider": {
+          "columns": {
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "DisplayName": {
+              "field": "DisplayName",
+              "op": "field"
+            },
+            "IsActive": {
+              "field": "IsActive",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "ProviderCode": {
+              "field": "ProviderCode",
+              "op": "field"
+            },
+            "ProviderID": {
+              "field": "ProviderID",
+              "op": "field"
+            },
+            "ProviderTypeCode": {
+              "field": "ProviderTypeCode",
+              "op": "field"
+            },
+            "SpecialtyCode": {
+              "field": "SpecialtyCode",
+              "op": "field"
+            }
+          },
+          "input_table": "Provider"
+        },
+        "VitalSign": {
+          "columns": {
+            "CreatedAtUtc": {
+              "field": "CreatedAtUtc",
+              "op": "field"
+            },
+            "DeletedAtUtc": {
+              "field": "DeletedAtUtc",
+              "op": "field"
+            },
+            "EncounterID": {
+              "field": "EncounterID",
+              "op": "field"
+            },
+            "IsDeleted": {
+              "field": "IsDeleted",
+              "op": "field"
+            },
+            "MeasuredAtUtc": {
+              "field": "MeasuredAtUtc",
+              "op": "field"
+            },
+            "ModifiedAtUtc": {
+              "field": "ModifiedAtUtc",
+              "op": "field"
+            },
+            "NumericValue": {
+              "field": "NumericValue",
+              "op": "decimal",
+              "rounding": "ROUND_HALF_UP",
+              "scale": 6
+            },
+            "ObservationStatus": {
+              "field": "ObservationStatus",
+              "op": "field"
+            },
+            "RecordingProviderID": {
+              "field": "RecordingProviderID",
+              "op": "field"
+            },
+            "TextValue": {
+              "field": "TextValue",
+              "op": "field"
+            },
+            "ValueUnit": {
+              "field": "ValueUnit",
+              "op": "field"
+            },
+            "VitalSignID": {
+              "field": "VitalSignID",
+              "op": "field"
+            },
+            "VitalTypeCode": {
+              "field": "VitalTypeCode",
+              "op": "field"
+            }
+          },
+          "input_table": "VitalSign"
+        }
+      }
+    }
+  }
+}

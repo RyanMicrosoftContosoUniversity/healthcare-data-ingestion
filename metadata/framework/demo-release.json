@@ -1,0 +1,1914 @@
+{
+  "version": "0.1.0",
+  "framework_version": "0.1.0",
+  "datasets": [
+    {
+      "dataset_id": "source.clarity.patient",
+      "name": "Clarity.dbo.Patient",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Patient"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.patient",
+      "name": "Clarity Patient Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Patient"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.provider",
+      "name": "Clarity.dbo.Provider",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Provider"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.provider",
+      "name": "Clarity Provider Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Provider"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.department",
+      "name": "Clarity.dbo.Department",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Department"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.department",
+      "name": "Clarity Department Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Department"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.encounter",
+      "name": "Clarity.dbo.Encounter",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Encounter"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.encounter",
+      "name": "Clarity Encounter Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Encounter"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.diagnosis",
+      "name": "Clarity.dbo.Diagnosis",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Diagnosis"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.diagnosis",
+      "name": "Clarity Diagnosis Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Diagnosis"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.procedure",
+      "name": "Clarity.dbo.Procedure",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Procedure"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.procedure",
+      "name": "Clarity Procedure Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Procedure"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.medicationorder",
+      "name": "Clarity.dbo.MedicationOrder",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "MedicationOrder"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.medicationorder",
+      "name": "Clarity MedicationOrder Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "MedicationOrder"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.medicationadministration",
+      "name": "Clarity.dbo.MedicationAdministration",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "MedicationAdministration"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.medicationadministration",
+      "name": "Clarity MedicationAdministration Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "MedicationAdministration"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.laboratoryorder",
+      "name": "Clarity.dbo.LaboratoryOrder",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "LaboratoryOrder"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.laboratoryorder",
+      "name": "Clarity LaboratoryOrder Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "LaboratoryOrder"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.laboratoryresult",
+      "name": "Clarity.dbo.LaboratoryResult",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "LaboratoryResult"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.laboratoryresult",
+      "name": "Clarity LaboratoryResult Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "LaboratoryResult"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.vitalsign",
+      "name": "Clarity.dbo.VitalSign",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "VitalSign"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.vitalsign",
+      "name": "Clarity VitalSign Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "VitalSign"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.coverage",
+      "name": "Clarity.dbo.Coverage",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Coverage"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.coverage",
+      "name": "Clarity Coverage Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Coverage"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.clarity.appointment",
+      "name": "Clarity.dbo.Appointment",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "clarity-source",
+          "schema": "dbo",
+          "table": "Appointment"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.clarity.appointment",
+      "name": "Clarity Appointment Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "clarity",
+          "table": "Appointment"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimpatient",
+      "name": "Caboodle.dbo.DimPatient",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimPatient"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimpatient",
+      "name": "Caboodle DimPatient Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimPatient"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimprovider",
+      "name": "Caboodle.dbo.DimProvider",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimProvider"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimprovider",
+      "name": "Caboodle DimProvider Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimProvider"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimdepartment",
+      "name": "Caboodle.dbo.DimDepartment",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimDepartment"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimdepartment",
+      "name": "Caboodle DimDepartment Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimDepartment"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimdate",
+      "name": "Caboodle.dbo.DimDate",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimDate"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimdate",
+      "name": "Caboodle DimDate Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimDate"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimdiagnosis",
+      "name": "Caboodle.dbo.DimDiagnosis",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimDiagnosis"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimdiagnosis",
+      "name": "Caboodle DimDiagnosis Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimDiagnosis"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimprocedure",
+      "name": "Caboodle.dbo.DimProcedure",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimProcedure"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimprocedure",
+      "name": "Caboodle DimProcedure Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimProcedure"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimmedication",
+      "name": "Caboodle.dbo.DimMedication",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimMedication"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimmedication",
+      "name": "Caboodle DimMedication Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimMedication"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.dimcoverage",
+      "name": "Caboodle.dbo.DimCoverage",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "DimCoverage"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.dimcoverage",
+      "name": "Caboodle DimCoverage Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "DimCoverage"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.factencounter",
+      "name": "Caboodle.dbo.FactEncounter",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "FactEncounter"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.factencounter",
+      "name": "Caboodle FactEncounter Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "FactEncounter"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.factdiagnosis",
+      "name": "Caboodle.dbo.FactDiagnosis",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "FactDiagnosis"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.factdiagnosis",
+      "name": "Caboodle FactDiagnosis Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "FactDiagnosis"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.factprocedure",
+      "name": "Caboodle.dbo.FactProcedure",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "FactProcedure"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.factprocedure",
+      "name": "Caboodle FactProcedure Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "FactProcedure"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.factmedicationorder",
+      "name": "Caboodle.dbo.FactMedicationOrder",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "FactMedicationOrder"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.factmedicationorder",
+      "name": "Caboodle FactMedicationOrder Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "FactMedicationOrder"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.factmedicationadministration",
+      "name": "Caboodle.dbo.FactMedicationAdministration",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "FactMedicationAdministration"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.factmedicationadministration",
+      "name": "Caboodle FactMedicationAdministration Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "FactMedicationAdministration"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.factlabresult",
+      "name": "Caboodle.dbo.FactLabResult",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "FactLabResult"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.factlabresult",
+      "name": "Caboodle FactLabResult Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "FactLabResult"
+        }
+      }
+    },
+    {
+      "dataset_id": "source.caboodle.factappointment",
+      "name": "Caboodle.dbo.FactAppointment",
+      "layer": "source",
+      "external": true,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "sql",
+          "connection_ref": "caboodle-source",
+          "schema": "dbo",
+          "table": "FactAppointment"
+        }
+      }
+    },
+    {
+      "dataset_id": "bronze.caboodle.factappointment",
+      "name": "Caboodle FactAppointment Bronze observations",
+      "layer": "bronze",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "bronze-lakehouse",
+          "schema": "caboodle",
+          "table": "FactAppointment"
+        }
+      }
+    },
+    {
+      "dataset_id": "silver1.clarity.patient",
+      "name": "Clarity Patient latest state",
+      "layer": "silver1",
+      "external": false,
+      "retired": false,
+      "freshness_seconds": 86400,
+      "physical_maps": {
+        "demo": {
+          "kind": "delta",
+          "workspace_ref": "data-workspace",
+          "lakehouse_ref": "silver-lakehouse",
+          "schema": "clarity",
+          "table": "Patient"
+        }
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "ingest.clarity.patient",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.patient",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.patient",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.patient.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.provider",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.provider",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.provider",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.provider.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.department",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.department",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.department",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.department.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.encounter",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.encounter",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.encounter",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.encounter.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.diagnosis",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.diagnosis",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.diagnosis",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.diagnosis.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.procedure",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.procedure",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.procedure",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.procedure.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.medicationorder",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.medicationorder",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.medicationorder",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.medicationorder.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.medicationadministration",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.medicationadministration",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.medicationadministration",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.medicationadministration.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.laboratoryorder",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.laboratoryorder",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.laboratoryorder",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.laboratoryorder.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.laboratoryresult",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.laboratoryresult",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.laboratoryresult",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.laboratoryresult.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.vitalsign",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.vitalsign",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.vitalsign",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.vitalsign.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.coverage",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.coverage",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.coverage",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.coverage.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.clarity.appointment",
+      "workflow": "clarity_bronze",
+      "primary_output": "bronze.clarity.appointment",
+      "inputs": [
+        {
+          "dataset_id": "source.clarity.appointment",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "clarity.appointment.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimpatient",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimpatient",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimpatient",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimpatient.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimprovider",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimprovider",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimprovider",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimprovider.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimdepartment",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimdepartment",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimdepartment",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimdepartment.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimdate",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimdate",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimdate",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimdate.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimdiagnosis",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimdiagnosis",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimdiagnosis",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimdiagnosis.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimprocedure",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimprocedure",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimprocedure",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimprocedure.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimmedication",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimmedication",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimmedication",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimmedication.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.dimcoverage",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.dimcoverage",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.dimcoverage",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.dimcoverage.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.factencounter",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.factencounter",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.factencounter",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.factencounter.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.factdiagnosis",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.factdiagnosis",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.factdiagnosis",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.factdiagnosis.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.factprocedure",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.factprocedure",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.factprocedure",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.factprocedure.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.factmedicationorder",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.factmedicationorder",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.factmedicationorder",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.factmedicationorder.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.factmedicationadministration",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.factmedicationadministration",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.factmedicationadministration",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.factmedicationadministration.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.factlabresult",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.factlabresult",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.factlabresult",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.factlabresult.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "ingest.caboodle.factappointment",
+      "workflow": "caboodle_bronze",
+      "primary_output": "bronze.caboodle.factappointment",
+      "inputs": [
+        {
+          "dataset_id": "source.caboodle.factappointment",
+          "alias": "source",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [],
+      "pipeline_object_id": "caboodle.factappointment.source-to-bronze",
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    },
+    {
+      "task_id": "curate.clarity.patient",
+      "workflow": "patient_silver",
+      "primary_output": "silver1.clarity.patient",
+      "inputs": [
+        {
+          "dataset_id": "bronze.clarity.patient",
+          "alias": "patient",
+          "required": true,
+          "freshness_seconds": null,
+          "allow_stale": false
+        }
+      ],
+      "functions": [
+        {
+          "occurrence_id": "patient.names.trim.v1",
+          "function": "normalize_names",
+          "parameters": {
+            "columns": [
+              "FirstName",
+              "LastName"
+            ]
+          },
+          "input_aliases": [
+            "patient"
+          ]
+        },
+        {
+          "occurrence_id": "patient.state.latest.v1",
+          "function": "latest_patient",
+          "parameters": {
+            "key": "PatientID",
+            "modified": "ModifiedAtUtc",
+            "business_columns": [
+              "PatientID",
+              "MedicalRecordNumber",
+              "FirstName",
+              "LastName",
+              "BirthDate",
+              "AdministrativeSexCode",
+              "City",
+              "StateCode",
+              "PostalCode",
+              "DeathDate",
+              "PatientStatus",
+              "CreatedAtUtc",
+              "ModifiedAtUtc",
+              "IsDeleted",
+              "DeletedAtUtc"
+            ]
+          },
+          "input_aliases": [
+            "patient"
+          ]
+        }
+      ],
+      "pipeline_object_id": null,
+      "ordering_after": [],
+      "scope": "default",
+      "retired": false,
+      "overrides": {}
+    }
+  ],
+  "artifacts": {
+    "package": {
+      "state": "UNPUBLISHED",
+      "approved_digest_required": true
+    },
+    "dependencies": {
+      "state": "UNPUBLISHED",
+      "approved_digest_required": true
+    },
+    "notebooks": {
+      "state": "UNPUBLISHED",
+      "approved_digest_required": true
+    },
+    "environments": {
+      "state": "UNPUBLISHED",
+      "approved_digest_required": true
+    },
+    "dags": {
+      "state": "UNPUBLISHED",
+      "approved_digest_required": true
+    },
+    "pipeline_objects": {
+      "clarity.patient.source-to-bronze": {
+        "source_dataset": "source.clarity.patient",
+        "target_dataset": "bronze.clarity.patient",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Patient",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": true
+      },
+      "clarity.provider.source-to-bronze": {
+        "source_dataset": "source.clarity.provider",
+        "target_dataset": "bronze.clarity.provider",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Provider",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.department.source-to-bronze": {
+        "source_dataset": "source.clarity.department",
+        "target_dataset": "bronze.clarity.department",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Department",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.encounter.source-to-bronze": {
+        "source_dataset": "source.clarity.encounter",
+        "target_dataset": "bronze.clarity.encounter",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Encounter",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.diagnosis.source-to-bronze": {
+        "source_dataset": "source.clarity.diagnosis",
+        "target_dataset": "bronze.clarity.diagnosis",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Diagnosis",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.procedure.source-to-bronze": {
+        "source_dataset": "source.clarity.procedure",
+        "target_dataset": "bronze.clarity.procedure",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Procedure",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.medicationorder.source-to-bronze": {
+        "source_dataset": "source.clarity.medicationorder",
+        "target_dataset": "bronze.clarity.medicationorder",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "MedicationOrder",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.medicationadministration.source-to-bronze": {
+        "source_dataset": "source.clarity.medicationadministration",
+        "target_dataset": "bronze.clarity.medicationadministration",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "MedicationAdministration",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.laboratoryorder.source-to-bronze": {
+        "source_dataset": "source.clarity.laboratoryorder",
+        "target_dataset": "bronze.clarity.laboratoryorder",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "LaboratoryOrder",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.laboratoryresult.source-to-bronze": {
+        "source_dataset": "source.clarity.laboratoryresult",
+        "target_dataset": "bronze.clarity.laboratoryresult",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "LaboratoryResult",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.vitalsign.source-to-bronze": {
+        "source_dataset": "source.clarity.vitalsign",
+        "target_dataset": "bronze.clarity.vitalsign",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "VitalSign",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.coverage.source-to-bronze": {
+        "source_dataset": "source.clarity.coverage",
+        "target_dataset": "bronze.clarity.coverage",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Coverage",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "clarity.appointment.source-to-bronze": {
+        "source_dataset": "source.clarity.appointment",
+        "target_dataset": "bronze.clarity.appointment",
+        "source_contract_ref": "clarity-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "Appointment",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.dimpatient.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimpatient",
+        "target_dataset": "bronze.caboodle.dimpatient",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimPatient",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": true
+      },
+      "caboodle.dimprovider.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimprovider",
+        "target_dataset": "bronze.caboodle.dimprovider",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimProvider",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.dimdepartment.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimdepartment",
+        "target_dataset": "bronze.caboodle.dimdepartment",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimDepartment",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.dimdate.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimdate",
+        "target_dataset": "bronze.caboodle.dimdate",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimDate",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.dimdiagnosis.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimdiagnosis",
+        "target_dataset": "bronze.caboodle.dimdiagnosis",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimDiagnosis",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.dimprocedure.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimprocedure",
+        "target_dataset": "bronze.caboodle.dimprocedure",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimProcedure",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.dimmedication.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimmedication",
+        "target_dataset": "bronze.caboodle.dimmedication",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimMedication",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.dimcoverage.source-to-bronze": {
+        "source_dataset": "source.caboodle.dimcoverage",
+        "target_dataset": "bronze.caboodle.dimcoverage",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "DimCoverage",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.factencounter.source-to-bronze": {
+        "source_dataset": "source.caboodle.factencounter",
+        "target_dataset": "bronze.caboodle.factencounter",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "FactEncounter",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.factdiagnosis.source-to-bronze": {
+        "source_dataset": "source.caboodle.factdiagnosis",
+        "target_dataset": "bronze.caboodle.factdiagnosis",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "FactDiagnosis",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.factprocedure.source-to-bronze": {
+        "source_dataset": "source.caboodle.factprocedure",
+        "target_dataset": "bronze.caboodle.factprocedure",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "FactProcedure",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.factmedicationorder.source-to-bronze": {
+        "source_dataset": "source.caboodle.factmedicationorder",
+        "target_dataset": "bronze.caboodle.factmedicationorder",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "FactMedicationOrder",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.factmedicationadministration.source-to-bronze": {
+        "source_dataset": "source.caboodle.factmedicationadministration",
+        "target_dataset": "bronze.caboodle.factmedicationadministration",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "FactMedicationAdministration",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.factlabresult.source-to-bronze": {
+        "source_dataset": "source.caboodle.factlabresult",
+        "target_dataset": "bronze.caboodle.factlabresult",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "FactLabResult",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      },
+      "caboodle.factappointment.source-to-bronze": {
+        "source_dataset": "source.caboodle.factappointment",
+        "target_dataset": "bronze.caboodle.factappointment",
+        "source_contract_ref": "caboodle-approved-contract",
+        "source_schema": "dbo",
+        "source_table": "FactAppointment",
+        "capture_mode": "CHECKPOINT",
+        "strict_schema": true,
+        "initial_nonempty": false
+      }
+    }
+  },
+  "framework_defaults": {
+    "scheduler": {
+      "retries": 2,
+      "retry_delay_seconds": 30,
+      "timeout_seconds": 3600,
+      "priority": 10
+    },
+    "spark": {
+      "startup": {},
+      "runtime": {}
+    },
+    "execution": {
+      "concurrency_limit": 1
+    },
+    "events": {
+      "coalesce": true,
+      "reconcile_seconds": 300,
+      "max_retries": 3,
+      "retry_delay_seconds": 30
+    }
+  },
+  "stage_defaults": {
+    "bronze": {
+      "execution": {
+        "notebook_ref": "generic-bronze",
+        "environment_ref": "bronze-environment",
+        "compute_profile_ref": "bronze-profile",
+        "ingestion_strategy": "checkpoint_append"
+      }
+    },
+    "silver1": {
+      "execution": {
+        "notebook_ref": "generic-silver1",
+        "environment_ref": "silver1-environment",
+        "compute_profile_ref": "silver1-profile",
+        "ingestion_strategy": "latest_state_merge"
+      }
+    }
+  }
+}
