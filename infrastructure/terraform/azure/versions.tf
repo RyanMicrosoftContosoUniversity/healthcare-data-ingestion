@@ -9,12 +9,21 @@ terraform {
       source  = "Azure/azapi"
       version = "= 2.14.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "= 3.10.0"
+    }
   }
   backend "azurerm" {}
 }
 
 provider "azurerm" {
-  features {}
+  features {
+    key_vault {
+      purge_soft_delete_on_destroy               = false
+      purge_soft_deleted_certificates_on_destroy = false
+    }
+  }
   subscription_id                 = var.subscription_id
   storage_use_azuread             = true
   resource_provider_registrations = "none"
@@ -23,4 +32,8 @@ provider "azurerm" {
 provider "azapi" {
   subscription_id = var.subscription_id
   tenant_id       = var.tenant_id
+}
+
+provider "azuread" {
+  tenant_id = var.tenant_id
 }

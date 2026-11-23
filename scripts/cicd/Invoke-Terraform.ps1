@@ -37,6 +37,13 @@ function Invoke-Tf([string[]]$Arguments) {
 if ($Phase -eq 'Plan') {
     if (-not (Test-Path $env:VARIABLES_FILE)) { throw 'Actual reviewed JSON deployment inputs are required.' }
     $variables = Get-Content $env:VARIABLES_FILE -Raw | ConvertFrom-Json -AsHashtable
+    if ($Module -eq 'azure' -and $variables.provision_runtime_principals) {
+        $principal = az ad sp show --id $env:ARM_CLIENT_ID --query id -o tsv
+        if ($LASTEXITCODE -ne 0 -or ($variables.ContainsKey('deployment_principal_object_id') -and $variables.deployment_principal_object_id -ne $principal)) {
+            throw 'Runtime identity owner must match the actual federated deployment principal.'
+        }
+        $variables.deployment_principal_object_id = $principal
+    }
     foreach ($key in @('subscription_id', 'tenant_id')) {
         $expected = if ($key -eq 'subscription_id') { $env:ARM_SUBSCRIPTION_ID } else { $account.tenantId }
         if ($variables.ContainsKey($key) -and $variables[$key] -ne $expected) { throw "Unapproved $key." }

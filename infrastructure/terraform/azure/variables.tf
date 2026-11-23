@@ -21,9 +21,10 @@ variable "sql_admin_name" {
 
 variable "admin_ipv4" {
   type        = string
-  description = "Approved human client's public IPv4 address, required before plan."
+  default     = null
+  description = "Approved human client's public IPv4; null disables direct human SQL firewall access."
   validation {
-    condition     = can(cidrhost("${var.admin_ipv4}/32", 0))
+    condition     = var.admin_ipv4 == null || (can(regex("^[0-9]{1,3}(\\.[0-9]{1,3}){3}$", var.admin_ipv4)) && can(cidrhost("${var.admin_ipv4}/32", 0)))
     error_message = "Supply an explicit IPv4 address."
   }
 }

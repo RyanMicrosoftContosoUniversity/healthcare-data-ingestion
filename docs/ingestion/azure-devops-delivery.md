@@ -23,12 +23,11 @@ Registered November 23, 2026 in the `\healthcare-data-ingestion` folder. Definit
 New definitions were added only to the required existing GitHub and fabric-sc
 connection permissions; existing unrelated grants were preserved.
 
-The split is published in GitHub **PR #2**, branch
-`build/separate-deployment-pipelines`. While review is pending, delivery definitions
-34/35/36/37 select that branch so their new YAML can be inspected. After merge,
-set each definition's default branch to `main` and run the merged main version.
-The runner rejects Terraform delivery from the review branch; artifact/source
-operations likewise require exact successful main CI. CI 33 already defaults to main.
+The split was published in GitHub **PR #2**, branch
+`build/separate-deployment-pipelines`, and has merged. Delivery definitions
+34/35/36/37 now default to `main`; CI 33 also defaults to main.
+The runner rejects Terraform delivery from review branches; artifact/source
+operations likewise require exact successful main CI.
 All five entrypoints and bootstrap/apply/migration template branches compiled
 server-side. This is definition registration, not a workload apply.
 
@@ -74,8 +73,14 @@ Assigning existing Entra users/groups to Fabric is not creating Entra accounts.
 Upload actual per-root JSON inputs as ADO Secure Files:
 
 - Bootstrap: actual `deployment_principal_object_id` matching fabric-sc.
-- Azure: `admin_ipv4`, confirmed `alert_email`, `budget_start_date`, the four actual
-  `runtime_principal_object_ids` and optional immutable `generator_image`.
+- Azure: confirmed `alert_email`, `budget_start_date` and optional immutable
+  `generator_image`. `admin_ipv4=null` leaves personal SQL client access disabled.
+  Supply an approved public IPv4 only when that access is needed.
+- For new runtime identities: `provision_runtime_principals=true` and the actual
+  `deployment_principal_object_id` matching fabric-sc. Terraform creates all four
+  principals and emits their real object IDs; no placeholder principal IDs are used.
+- For existing runtime identities: leave `provision_runtime_principals=false` and
+  supply all four actual `runtime_principal_object_ids`.
 - Fabric: actual control/orchestrator `runtime_principal_object_ids`; optional
   `workspace_access` entries identify `workspace` (`data`/`metadata`), `principal_id`,
   `principal_type` (`User`/`Group`/`ServicePrincipal`) and `role`.
@@ -83,6 +88,39 @@ Upload actual per-root JSON inputs as ADO Secure Files:
 Approved subscription, region and capacity defaults are preserved. Private keys,
 tokens and SQL passwords must never be placed in Terraform variables/state or
 build artifacts. Inputs do not silently substitute UAIs for certificate identities.
+
+### Runtime principals and Key Vault
+
+The November 23 instruction adds `hcingestion-runtime-kv` in the Azure resource
+group and the four `hc-ingestion-runtime-<role>` applications/service principals
+(`control`, `source-reader`, `diagnostics`, `orchestrator`). These are managed in
+the existing Azure root/state. Entra applications are tenant-level objects, not
+resources physically contained in the resource group.
+
+The vault uses Azure RBAC, purge protection and 90-day soft deletion. Each new app
+has a distinct 12-month, vault-generated RSA certificate. Terraform reads only
+the public certificate into `azuread_application_certificate`; no private-key
+resource, certificate import contents or Key Vault secret value is used. Outputs
+contain IDs and certificate/secret URIs only. Exportable certificates support the
+existing protected PFX-file runtime contract, not retrieval by unauthenticated apps.
+
+The deployment principal explicitly owns both applications and service principals.
+Its Microsoft Graph `Application.ReadWrite.OwnedBy` permission requires tenant
+admin consent before creation; Terraform does not grant privileges to its own
+deployment identity. Discovery on November 23 found no Graph app-role grants on
+fabric-sc, so actual principal creation remains blocked until that is resolved.
+The deployment application's client ID is `1a7a01d1-ea73-47ec-8051-6b6527f68ce2`.
+The runtime apps themselves do not receive Graph API permissions.
+
+The deployment principal has vault-scoped **Key Vault Certificates Officer** for
+certificate generation/public readback. Private-key retrieval, certificate-file
+delivery to Fabric/Airflow and runtime activation remain separate protected steps.
+Automatic Key Vault renewal is not enabled: Entra credential rotation must be
+reviewed with overlap before expiry rather than rotating only the vault copy.
+
+After Azure apply, copy its `runtime_principal_object_ids` output into the Fabric
+Secure File. Keep managed mode enabled on later Azure runs; switching it off
+would attempt protected identity deletion and is rejected.
 
 Azure owns Azure RBAC even when the principal is a Fabric workspace identity.
 After Fabric creation, pass its actual `fabric_data_identity_object_id` output as

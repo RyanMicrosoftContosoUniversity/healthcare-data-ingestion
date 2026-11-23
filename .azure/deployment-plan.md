@@ -2,7 +2,65 @@
 
 ## Status
 
-**Pipeline split: Ready for Validation. Workload: Not Ready for Deployment.**
+### November 23 runtime identity and Key Vault addition
+
+The user authorized four new certificate-backed runtime principals and a new Azure
+Key Vault in the approved Azure resource group. The notification recipient is now
+confirmed; keep the actual address in protected deployment inputs, not this plan.
+The SQL administration public IPv4 is still unconfirmed.
+
+Prepare Terraform ownership for the new vault, identities, certificate credentials
+and narrowly scoped access. Prefer vault-generated certificates so private keys
+never enter source code, logs or Terraform state. Preserve the independent Azure
+and Fabric lanes and their actual-plan review gates. Inspect the existing runtime
+certificate contract and deployment identity permissions before finalizing the
+provisioning mechanism. Do not fabricate identity IDs or claim cloud creation from
+code preparation.
+
+Implementation direction under the user's creation instruction:
+
+- Extend the existing Azure root/state, not Fabric Terraform or a separate state.
+- Add pinned AzureAD provider 3.10.0 for applications, service principals and their
+  public certificate credentials. The four apps/SPs are explicitly owned by the
+  existing fabric-sc deployment principal.
+- Create `hcingestion-runtime-kv` in the approved group with RBAC, purge protection
+  and 90-day soft deletion. Generate RSA client certificates in the vault; Terraform
+  consumes only public certificate data and secret identifiers, never private keys.
+- Use `provision_runtime_principals=true` for this new foundation. Preserve the
+  external-principal path for existing deployments; feed real created object IDs
+  into Azure grants and Fabric's later deployment inputs.
+- Default personal SQL client access to disabled (`admin_ipv4=null`) until an
+  explicit approved public IPv4 is supplied. Do not substitute the agent's IP.
+- The current fabric-sc app has no Graph app roles. Its required
+  `Application.ReadWrite.OwnedBy` admin consent is a real deployment prerequisite,
+  not something Terraform should silently grant to itself.
+- Keep certificates out of Terraform imports/secret values and keep runtime
+  certificate-file delivery and activation separate. No automatic Key Vault renewal
+  is configured without corresponding reviewed Entra credential rotation.
+
+Runtime foundation preparation status: **Ready for Validation**. Local Terraform
+syntax and isolated mock-plan tests passed, including managed/external
+identity paths and optional SQL administration access. Delivery lane checks and
+the full native suite passed. No real Azure plan or cloud creation has occurred:
+the approved group still does not exist and fabric-sc lacks Graph app-role grants.
+Actual notification and deployment inputs are prepared outside the repository.
+
+### 7. Validation Proof: runtime foundation
+
+| Check | Command/evidence | Result |
+| --- | --- | --- |
+| Terraform initialization | Azure root `init -backend=false -input=false`; pinned AzureAD 3.10.0 | Signed provider installed; existing AzureRM/AzAPI pins preserved |
+| Syntax and format | `terraform validate` for Azure/Fabric/bootstrap; recursive format check | Passed |
+| Foundation behavior | `terraform test` with mocked AzureRM/AzureAD/AzAPI | Managed/external identity plans, no certificate import, optional SQL client rule and invalid-address rejection pass without cloud calls |
+| Native helper behavior | Ruff check/format and full native pytest | Passed; password/private-key resource types remain excluded from identity plan allowlist |
+| Pipeline/helper syntax | YAML parsing and PowerShell AST | Passed |
+| Target discovery | Approved subscription/tenant, group existence, Key Vault name/provider, runtime names | Target confirmed; group absent, vault name available, provider registered, no matching runtime apps found |
+| Static roles | Vault-scoped Certificates Officer and application/SP ownership assigned to actual fabric-sc principal | Reviewed; no runtime Graph permission grant, no private-key retrieval grant |
+| Existing Azure deployment rights | Scoped role-assignment discovery for fabric-sc | Contributor and Role Based Access Control Administrator present at approved subscription scope |
+| Graph permission | Deployment service-principal `appRoleAssignments` | Empty; `Application.ReadWrite.OwnedBy` admin consent required before real provisioning |
+| Live Terraform plan/state/policy and creation | Existing reviewed-main saved-plan process | Not run; remain blocked rather than setting workload Validated |
+
+**Pipeline split: complete. Workload: Not Ready for Deployment.**
 The approved ownership refactor is implemented; validate the independent roots,
 publisher, saved-plan helpers and ADO definitions. This is not authorization for
 Azure/Fabric applies, and no live Terraform plan is validated by local checks.

@@ -67,7 +67,18 @@ def validate_plan(plan: dict, layer: str | None = None) -> None:
         if layer and change.get("mode", "managed") == "managed":
             resource_type = change["type"]
             allowed = (
-                resource_type.startswith(("azurerm_", "azapi_"))
+                (
+                    resource_type.startswith(("azurerm_", "azapi_"))
+                    or (
+                        layer == "azure"
+                        and resource_type
+                        in {
+                            "azuread_application",
+                            "azuread_service_principal",
+                            "azuread_application_certificate",
+                        }
+                    )
+                )
                 if layer in {"azure", "bootstrap"}
                 else resource_type
                 in {

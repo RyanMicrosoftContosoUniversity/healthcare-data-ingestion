@@ -54,7 +54,7 @@ resource "azurerm_mssql_firewall_rule" "azure_services" {
 }
 
 resource "azurerm_mssql_firewall_rule" "administrator" {
-  for_each         = local.sources
+  for_each         = var.admin_ipv4 == null ? {} : local.sources
   name             = "ApprovedAdministrator"
   server_id        = azurerm_mssql_server.source[each.key].id
   start_ip_address = var.admin_ipv4

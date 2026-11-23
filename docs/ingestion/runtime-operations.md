@@ -1,5 +1,12 @@
 # Runtime, Release Preparation and Live Acceptance
 
+The November 23 runtime foundation adds four Terraform-managed certificate-backed
+principals and `hcingestion-runtime-kv` through the Azure infrastructure lane.
+Vault-generated private keys are not Terraform values. Azure outputs emit
+client/principal IDs and certificate secret URIs; they do not expose PFX contents
+or complete certificate-file delivery. The `certificate_path_env` contract below
+is unchanged, and runtime activation still requires protected delivery.
+
 ## Scope and authority
 
 Handoff 03 authorizes local development, not cloud apply/activation. Preserve independent
