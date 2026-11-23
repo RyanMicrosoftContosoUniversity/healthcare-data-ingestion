@@ -8,13 +8,29 @@ Target: **Contoso-University / Fabric**. Repository:
 The November 23 clarification separates three deployment lanes. Shared validation
 remains CI; Azure image builds and SQL migrations remain separate source operations.
 
-| Pipeline | YAML | Owns |
-| --- | --- | --- |
-| `healthcare-ingestion-azure-infrastructure` | `pipelines\azure-infrastructure.yml` | All Terraform-managed Azure resources; select `bootstrap` for RG/backend or `azure` for recurring Azure resource updates |
-| `healthcare-ingestion-fabric-infrastructure` | `pipelines\fabric-infrastructure.yml` | Terraform-managed Fabric workspaces, capacity assignment, workspace users/groups/SP access, lakehouses and metadata SQL database |
-| `healthcare-ingestion-fabric-artifacts` | `pipelines\fabric-artifacts.yml` | Versioned Fabric environments/libraries, notebook definitions, Airflow item/DAG/plugin content and declared data-pipeline definitions |
-| `healthcare-ingestion-ci` | `pipelines\ci.yml` | Lint/native/Spark tests, package/bundle and independent Terraform-root validation |
-| `healthcare-ingestion-source-operations` | `pipelines\source-operations.yml` | Existing generator image publication and reviewed SQL migrations; not Terraform infrastructure or Fabric notebook deployment |
+| ID | Pipeline | YAML | Owns |
+| --- | --- | --- | --- |
+| 34 | `healthcare-ingestion-azure-infrastructure` | `pipelines\azure-infrastructure.yml` | All Terraform-managed Azure resources; select `bootstrap` for RG/backend or `azure` for recurring Azure resource updates |
+| 36 | `healthcare-ingestion-fabric-infrastructure` | `pipelines\fabric-infrastructure.yml` | Terraform-managed Fabric workspaces, capacity assignment, workspace users/groups/SP access, lakehouses and metadata SQL database |
+| 35 | `healthcare-ingestion-fabric-artifacts` | `pipelines\fabric-artifacts.yml` | Versioned Fabric environments/libraries, notebook definitions, Airflow item/DAG/plugin content and declared data-pipeline definitions |
+| 33 | `healthcare-ingestion-ci` | `pipelines\ci.yml` | Lint/native/Spark tests, package/bundle and independent Terraform-root validation |
+| 37 | `healthcare-ingestion-source-operations` | `pipelines\source-operations.yml` | Existing generator image publication and reviewed SQL migrations; not Terraform infrastructure or Fabric notebook deployment |
+
+Registered November 23, 2026 in the `\healthcare-data-ingestion` folder. Definitions
+34/35 retain their history; 36/37 are new. Artifact definition 35 has
+`CI_PIPELINE_ID=33` and `FABRIC_INFRA_PIPELINE_ID=36`; source operations 37 has
+`CI_PIPELINE_ID=33`. Infrastructure has no application-CI binding.
+New definitions were added only to the required existing GitHub and fabric-sc
+connection permissions; existing unrelated grants were preserved.
+
+The split is published in GitHub **PR #2**, branch
+`build/separate-deployment-pipelines`. While review is pending, delivery definitions
+34/35/36/37 select that branch so their new YAML can be inspected. After merge,
+set each definition's default branch to `main` and run the merged main version.
+The runner rejects Terraform delivery from the review branch; artifact/source
+operations likewise require exact successful main CI. CI 33 already defaults to main.
+All five entrypoints and bootstrap/apply/migration template branches compiled
+server-side. This is definition registration, not a workload apply.
 
 Azure and Fabric infrastructure pipelines do not consume the ingestion wheel,
 notebook bundle or an application CI run. They validate their checked-out Terraform

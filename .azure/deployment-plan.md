@@ -36,6 +36,7 @@ Local checks on November 23, 2026:
 | Final publisher changes | `pytest tests\test_cicd_delivery.py tests\test_runtime_artifacts.py -q` | 51 passed, including unmanifested inputs and 200/202 operation polling |
 | Immutable declarations | `python -m healthcare_ingestion.build_artifacts` with actual built wheel | New scratch bundle compiled, including hashed Fabric declarations; no historical bundle overwritten |
 | Pipeline/helper syntax | PyYAML across eight YAML files; PowerShell AST across delivery scripts | Passed |
+| Actual ADO registration and server compilation | Definitions 33/34/35/36/37 and bootstrap/apply/migration template branches | Passed; GitHub PR #2 publishes the split |
 | Plan preview and remote state backend | Actual Secure File inputs and reviewed live Terraform plan | Not run: live inputs/approval remain outstanding |
 | Azure Policy validation | Target-resource policy evaluation | Not yet run; required before a live apply |
 | AZD template resolution | Not an AZD recipe; direct Terraform inputs | Not applicable |
@@ -46,6 +47,10 @@ AcrPull, DCR-scoped Monitoring Metrics Publisher and separately owned Fabric
 workspace assignments. Actual Fabric identity grants remain optional until the
 Fabric root emits its real principal; certificate-backed runtime principals are
 not replaced with workspace/managed identities. SQL runtime grants remain migrations.
+
+GitHub native CI was corrected to install the same `cloud` dependency extra as ADO
+after its first PR run exposed missing Azure SDK imports. No application behavior
+or dependency versions changed.
 
 The pipeline refactor has local validation evidence, not a validated cloud plan.
 Do not set the workload status to Validated or invoke Azure deployment: backend,
