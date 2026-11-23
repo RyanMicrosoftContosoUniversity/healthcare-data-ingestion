@@ -105,6 +105,15 @@ metadata ERDs are a baseline, not the approved revised physical schema.
 
 ### Local Engineering Evidence and Live Boundary
 
+November 23 pipeline-ownership clarification: use independent **Azure Terraform**,
+**Fabric infrastructure Terraform**, and **Fabric artifact CI/CD** pipelines.
+Azure owns all Azure resources/RBAC, including grants to actual Fabric principals;
+Fabric infrastructure owns workspaces/access/capacity attachment and durable data
+containers. Artifact CI/CD owns environment/library/notebook/Airflow content,
+including declared data pipelines across target workspaces. This supersedes earlier
+combined pipeline and Terraform-notebook ownership descriptions, not the approved
+source/Patient scope. Independent infrastructure updates need no ingestion bundle.
+
 November 21 local checkpoint: full native suite 191 passed / two Windows Spark
 module skips; latest runtime selector 30 passed; final real Linux Spark suite
 10 passed. Ruff, source/wheel build, stable 28/454 exports, CI YAML parsing,

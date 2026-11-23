@@ -64,7 +64,7 @@ jobs:
         run: |
           terraform -chdir=infrastructure\terraform fmt -check -recursive
           if ($LASTEXITCODE -ne 0) { throw 'Terraform format failed.' }
-          foreach ($module in @('infrastructure\terraform', 'infrastructure\terraform\bootstrap')) {
+          foreach ($module in @('infrastructure\terraform\azure', 'infrastructure\terraform\fabric', 'infrastructure\terraform\bootstrap')) {
             terraform "-chdir=$module" init -backend=false -input=false
             if ($LASTEXITCODE -ne 0) { throw 'Terraform initialization failed.' }
             terraform "-chdir=$module" validate

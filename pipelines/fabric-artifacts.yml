@@ -1,0 +1,57 @@
+name: healthcare-fabric-artifacts-$(Date:yyyyMMdd).$(Rev:r)
+trigger: none
+pr: none
+parameters:
+  - name: ciRunId
+    type: number
+    default: 0
+  - name: infrastructureRunId
+    type: number
+    default: 0
+jobs:
+  - job: PublishFabricArtifacts
+    pool:
+      vmImage: windows-2022
+    timeoutInMinutes: 60
+    steps:
+      - checkout: self
+        fetchDepth: 1
+        persistCredentials: false
+      - template: templates/tools.yml
+      - template: templates/release.yml
+        parameters:
+          ciRunId: ${{ parameters.ciRunId }}
+      - pwsh: |
+          .\scripts\cicd\Confirm-DeploymentRun.ps1 -RunId $env:INFRASTRUCTURE_RUN_ID -DefinitionId $env:INFRASTRUCTURE_DEFINITION_ID
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          INFRASTRUCTURE_RUN_ID: ${{ parameters.infrastructureRunId }}
+          INFRASTRUCTURE_DEFINITION_ID: $(FABRIC_INFRA_PIPELINE_ID)
+        displayName: Verify successful Fabric infrastructure apply provenance
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: specific
+          project: '5fa2c482-b68c-477d-bfdb-15c5a02d8b43'
+          definition: $(FABRIC_INFRA_PIPELINE_ID)
+          buildVersionToDownload: specific
+          pipelineId: ${{ parameters.infrastructureRunId }}
+          artifactName: deployment-outputs
+          targetPath: $(Pipeline.Workspace)\fabric-infrastructure
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: fabric-sc
+          scriptType: pscore
+          scriptLocation: inlineScript
+          inlineScript: |
+            uv run --locked python scripts\cicd\delivery.py publish "$env:RELEASE_ROOT" --outputs "$env:OUTPUTS_FILE" --receipt "$env:RECEIPT_DIRECTORY\fabric-delivery.json" --infrastructure-run "$env:INFRASTRUCTURE_RUN_ID"
+            if ($LASTEXITCODE -ne 0) { throw 'Fabric artifact publication failed; inspect partial receipts. No release is activated.' }
+        env:
+          RELEASE_ROOT: $(Pipeline.Workspace)\release
+          OUTPUTS_FILE: $(Pipeline.Workspace)\fabric-infrastructure\outputs.json
+          INFRASTRUCTURE_RUN_ID: ${{ parameters.infrastructureRunId }}
+          RECEIPT_DIRECTORY: $(Build.ArtifactStagingDirectory)\delivery
+      - task: PublishPipelineArtifact@1
+        condition: succeededOrFailed()
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)\delivery
+          artifactName: delivery-receipts

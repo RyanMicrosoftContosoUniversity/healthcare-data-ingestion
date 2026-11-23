@@ -2,6 +2,11 @@
 
 ## Status
 
+**Pipeline split: Ready for Validation. Workload: Not Ready for Deployment.**
+The approved ownership refactor is implemented; validate the independent roots,
+publisher, saved-plan helpers and ADO definitions. This is not authorization for
+Azure/Fabric applies, and no live Terraform plan is validated by local checks.
+
 Development and infrastructure preparation are authorized by
 `discussions\discussed-changes-03.md` and the November 20 instruction to consolidate
 the decisions and perform the development work. Architectural directions are
@@ -18,6 +23,70 @@ approval loop. Unverified schemas, provider support and test results are not
 implicitly complete; cloud creation/apply and activation remain separate.
 
 ## Azure DevOps Pipeline Delivery
+
+### 7. Validation Proof: independent pipeline split
+
+Local checks on November 23, 2026:
+
+| Check | Command/evidence | Result |
+| --- | --- | --- |
+| All validation checks pass: tools/authentication | Terraform 1.13.4; Azure CLI; `az account show` | Approved subscription/tenant confirmed |
+| Initialize, format, syntax | `terraform init -backend=false -input=false -lockfile=readonly`, `terraform fmt -check -recursive`, `terraform validate` for bootstrap/Azure/Fabric | Passed; existing AzureRM storage-property deprecation only |
+| Build and native behavior | `scripts\Test-Project.ps1` | Lint/format, 209 native tests and source/wheel builds passed; two Windows Spark skips |
+| Final publisher changes | `pytest tests\test_cicd_delivery.py tests\test_runtime_artifacts.py -q` | 51 passed, including unmanifested inputs and 200/202 operation polling |
+| Immutable declarations | `python -m healthcare_ingestion.build_artifacts` with actual built wheel | New scratch bundle compiled, including hashed Fabric declarations; no historical bundle overwritten |
+| Pipeline/helper syntax | PyYAML across eight YAML files; PowerShell AST across delivery scripts | Passed |
+| Plan preview and remote state backend | Actual Secure File inputs and reviewed live Terraform plan | Not run: live inputs/approval remain outstanding |
+| Azure Policy validation | Target-resource policy evaluation | Not yet run; required before a live apply |
+| AZD template resolution | Not an AZD recipe; direct Terraform inputs | Not applicable |
+
+Static role review preserves container-scoped Blob Data Contributor for generator
+and recovery writers, Blob Data Reader for source-reader/Fabric reads, ACR-scoped
+AcrPull, DCR-scoped Monitoring Metrics Publisher and separately owned Fabric
+workspace assignments. Actual Fabric identity grants remain optional until the
+Fabric root emits its real principal; certificate-backed runtime principals are
+not replaced with workspace/managed identities. SQL runtime grants remain migrations.
+
+The pipeline refactor has local validation evidence, not a validated cloud plan.
+Do not set the workload status to Validated or invoke Azure deployment: backend,
+policy, actual inputs, live plan review and activation gates remain incomplete.
+
+### Approved independent pipeline boundaries
+
+The November 23 clarification approves three independent delivery pipelines:
+Azure resources managed by Terraform, Fabric infrastructure managed by Terraform,
+and CI/CD for Fabric artifacts such as notebooks and data pipelines.
+Azure scope: resource group,
+protected Terraform backend, Azure SQL infrastructure, storage, registry, Container
+Apps, Azure identities/RBAC, budgets and monitoring. Exclude Fabric workspaces/items,
+SQL schema/data migrations and application publication.
+
+The implementation separates the mixed configuration into `infrastructure\terraform\azure`
+and `infrastructure\terraform\fabric`, with independent backend keys and the existing
+bootstrap root. Preserve existing resource names, approved subscription,
+regions, identity boundaries and disabled runtime/alert activation. Keep backend
+bootstrap separate from recurring workload updates. Exchange only explicit output
+bindings; handle Fabric-identity-dependent Azure role assignments after the actual
+Fabric identities exist, without circular state ownership or placeholder IDs.
+
+The dedicated Azure and Fabric pipelines perform validate, saved plan, existing plan
+review and exact-plan apply without downloading the ingestion wheel/notebook bundle
+or requiring a successful application release. Application CI remains independent.
+Keep PR/merged-main governance and scoped federated authentication. Register and
+server-validate the revised definitions after the boundary is approved; do not apply
+Azure changes as part of this pipeline refactoring.
+
+The user confirmed **all Azure resources**, not just the group/backend bootstrap.
+Implement the separation without applying cloud resources. Preserve the existing
+approved subscription/regions and actual-plan review gate. Fabric artifact content
+has only one deployment owner: the Fabric artifact pipeline. It provisions the
+versioned environment/notebook and Airflow artifact items and publishes content.
+Fabric Terraform owns durable workspaces, capacity attachment, access assignments,
+lakehouses and the metadata SQL database, not notebook/library/DAG content.
+
+The original pipeline IDs/history below describe the first delivery; the current
+three-lane design and bootstrap/grant ordering supersede its combined ownership.
+See `docs\ingestion\azure-devops-delivery.md` for current definitions and inputs.
 
 The subsequent request to construct and deploy CI/CD targets
 **Contoso-University / Fabric**. Definitions are registered in

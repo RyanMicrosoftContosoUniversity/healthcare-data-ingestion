@@ -1,0 +1,16 @@
+name: healthcare-fabric-infra-$(Date:yyyyMMdd).$(Rev:r)
+trigger: none
+pr: none
+parameters:
+  - name: variablesSecureFile
+    type: string
+    default: ''
+  - name: apply
+    type: boolean
+    default: false
+stages:
+  - template: templates/terraform.yml
+    parameters:
+      module: fabric
+      variablesSecureFile: ${{ parameters.variablesSecureFile }}
+      apply: ${{ parameters.apply }}
