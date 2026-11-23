@@ -1,25 +1,13 @@
-name: healthcare-infra-$(Date:yyyyMMdd).$(Rev:r)
-trigger: none
-pr: none
 parameters:
-  - name: ciRunId
-    type: number
-    default: 0
   - name: module
     type: string
-    default: workload
-    values: [bootstrap, workload]
+    values: [bootstrap, azure, fabric]
   - name: variablesSecureFile
     type: string
     default: ''
   - name: apply
     type: boolean
     default: false
-variables:
-  - name: azureServiceConnection
-    value: fabric-sc
-  - name: planDirectory
-    value: $(Pipeline.Workspace)\terraform-plan
 stages:
   - stage: Plan
     jobs:
@@ -31,12 +19,11 @@ stages:
           - checkout: self
             fetchDepth: 1
             persistCredentials: false
-          - template: templates/tools.yml
-            parameters:
-              terraform: true
-          - template: templates/release.yml
-            parameters:
-              ciRunId: ${{ parameters.ciRunId }}
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.11'
+          - pwsh: .\scripts\cicd\Install-Terraform.ps1
+            displayName: Install checksum-verified Terraform
           - ${{ if eq(parameters.variablesSecureFile, '') }}:
               - pwsh: |
                   throw 'Upload the reviewed deployment inputs to an ADO Secure File and select variablesSecureFile. No placeholder inputs are permitted.'
@@ -47,7 +34,7 @@ stages:
                   secureFile: ${{ parameters.variablesSecureFile }}
               - task: AzureCLI@2
                 inputs:
-                  azureSubscription: $(azureServiceConnection)
+                  azureSubscription: fabric-sc
                   addSpnToEnvironment: true
                   scriptType: pscore
                   scriptLocation: scriptPath
@@ -55,11 +42,10 @@ stages:
                   arguments: -Phase Plan -Module ${{ parameters.module }}
                 env:
                   VARIABLES_FILE: $(inputs.secureFilePath)
-                  RELEASE_ROOT: $(Pipeline.Workspace)\release
-                  PLAN_DIRECTORY: $(planDirectory)
+                  PLAN_DIRECTORY: $(Pipeline.Workspace)\terraform-plan
               - task: PublishPipelineArtifact@1
                 inputs:
-                  targetPath: $(planDirectory)
+                  targetPath: $(Pipeline.Workspace)\terraform-plan
                   artifactName: terraform-plan
   - ${{ if eq(parameters.apply, true) }}:
       - stage: Review
@@ -88,30 +74,28 @@ stages:
               - checkout: self
                 fetchDepth: 1
                 persistCredentials: false
-              - template: templates/tools.yml
-                parameters:
-                  terraform: true
-              - template: templates/release.yml
-                parameters:
-                  ciRunId: ${{ parameters.ciRunId }}
+              - task: UsePythonVersion@0
+                inputs:
+                  versionSpec: '3.11'
+              - pwsh: .\scripts\cicd\Install-Terraform.ps1
+                displayName: Install checksum-verified Terraform
               - task: DownloadPipelineArtifact@2
                 inputs:
                   buildType: current
                   artifactName: terraform-plan
-                  targetPath: $(planDirectory)
+                  targetPath: $(Pipeline.Workspace)\terraform-plan
               - task: AzureCLI@2
                 inputs:
-                  azureSubscription: $(azureServiceConnection)
+                  azureSubscription: fabric-sc
                   addSpnToEnvironment: true
                   scriptType: pscore
                   scriptLocation: scriptPath
                   scriptPath: scripts\cicd\Invoke-Terraform.ps1
                   arguments: -Phase Apply -Module ${{ parameters.module }}
                 env:
-                  RELEASE_ROOT: $(Pipeline.Workspace)\release
-                  PLAN_DIRECTORY: $(planDirectory)
+                  PLAN_DIRECTORY: $(Pipeline.Workspace)\terraform-plan
               - task: PublishPipelineArtifact@1
                 condition: succeeded()
                 inputs:
-                  targetPath: $(planDirectory)\outputs.json
+                  targetPath: $(Pipeline.Workspace)\terraform-plan\deployment-outputs
                   artifactName: deployment-outputs

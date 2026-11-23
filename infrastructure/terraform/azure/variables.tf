@@ -66,11 +66,6 @@ variable "activate_alerts" {
   description = "Enable only after reviewed deployment, real telemetry and email delivery acceptance."
 }
 
-variable "capacity_id" {
-  type    = string
-  default = "ad343e36-f335-4ba3-b261-b739f7e950b0"
-}
-
 variable "location" {
   type    = string
   default = "eastus"
@@ -81,20 +76,12 @@ variable "location" {
 
 }
 
-variable "framework_version" {
-  type    = string
-  default = "0.1.0"
+variable "fabric_workspace_identity_object_id" {
+  type        = string
+  default     = null
+  description = "Actual Fabric data-workspace identity output; omit on foundation apply, supply after Fabric creation for Azure-scoped grants."
   validation {
-    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+$", var.framework_version))
-    error_message = "Publish a distinct immutable semver environment for each release."
-  }
-}
-
-variable "retained_framework_versions" {
-  type    = set(string)
-  default = ["0.1.0"]
-  validation {
-    condition     = contains(var.retained_framework_versions, var.framework_version)
-    error_message = "Retain the current environment and every referenced prior release."
+    condition     = var.fabric_workspace_identity_object_id == null || can(regex("^[0-9a-fA-F-]{36}$", var.fabric_workspace_identity_object_id))
+    error_message = "Supply the actual Fabric data-workspace service-principal object ID."
   }
 }

@@ -213,58 +213,9 @@ resource "azurerm_container_app_job" "generator" {
   }
 }
 
-resource "fabric_workspace" "metadata" {
-  display_name = "healthcare-data-ingestion-metadata"
-  capacity_id  = var.capacity_id
-  identity     = { type = "SystemAssigned" }
-  lifecycle { prevent_destroy = true }
-}
-
-resource "fabric_workspace" "data" {
-  display_name = "healthcare-data-ingestion-data"
-  capacity_id  = var.capacity_id
-  identity     = { type = "SystemAssigned" }
-  lifecycle { prevent_destroy = true }
-}
-
-resource "fabric_sql_database" "metadata" {
-  display_name = "healthcare-data-ingestion-metadata-db"
-  workspace_id = fabric_workspace.metadata.id
-  lifecycle { prevent_destroy = true }
-}
-
-resource "fabric_lakehouse" "data" {
-  for_each      = toset(["bronze", "silver"])
-  display_name  = "healthcare_data_ingestion_${each.key}"
-  workspace_id  = fabric_workspace.data.id
-  configuration = { enable_schemas = true }
-  lifecycle { prevent_destroy = true }
-}
-
-resource "fabric_environment" "release" {
-  for_each     = var.retained_framework_versions
-  display_name = "hc-ingestion-environment-${each.key}"
-  workspace_id = fabric_workspace.data.id
-  lifecycle { prevent_destroy = true }
-}
-
-resource "fabric_spark_environment_settings" "release" {
-  for_each           = fabric_environment.release
-  workspace_id       = fabric_workspace.data.id
-  environment_id     = each.value.id
-  publication_status = "Published"
-  runtime_version    = "2.0"
-  spark_properties   = { "spark.sql.session.timeZone" = "UTC" }
-}
-
-resource "fabric_apache_airflow_job" "orchestration" {
-  display_name = "hc-ingestion-orchestration"
-  workspace_id = fabric_workspace.data.id
-}
-
 resource "azurerm_role_assignment" "fabric_checkpoint_reader" {
-  for_each             = azurerm_storage_container.generator
+  for_each             = var.fabric_workspace_identity_object_id == null ? {} : azurerm_storage_container.generator
   scope                = each.value.id
   role_definition_name = "Storage Blob Data Reader"
-  principal_id         = fabric_workspace.data.identity.service_principal_id
+  principal_id         = var.fabric_workspace_identity_object_id
 }

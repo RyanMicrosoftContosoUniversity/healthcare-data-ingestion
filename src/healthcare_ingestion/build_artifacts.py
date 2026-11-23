@@ -155,6 +155,32 @@ def prepare_release(snapshot, source_contracts, wheel, dependency_lock, output):
     payloads = {
         "bronze.ipynb": encoded(notebook_definition("bronze")),
         "patient-silver.ipynb": encoded(notebook_definition("silver1")),
+        "fabric-items.json": encoded(
+            {
+                "environment": {
+                    "display_name": f"hc-ingestion-environment-{snapshot.version}",
+                    "runtime_version": "2.0",
+                },
+                "airflow": {"display_name": "hc-ingestion-orchestration"},
+                "items": [
+                    {
+                        "key": workflow,
+                        "workspace": "data",
+                        "display_name": f"hc-{workflow}-{snapshot.version}",
+                        "type": "Notebook",
+                        "format": "ipynb",
+                        "definition_file": source,
+                        "definition_path": "notebook-content.ipynb",
+                        "lakehouse": layer,
+                    }
+                    for workflow, source, layer in (
+                        ("clarity_bronze", "bronze.ipynb", "bronze"),
+                        ("caboodle_bronze", "bronze.ipynb", "bronze"),
+                        ("patient_silver", "patient-silver.ipynb", "silver"),
+                    )
+                ],
+            }
+        ),
         "dag-specifications.json": encoded(dag_specifications(snapshot)),
         "dependency.lock": Path(dependency_lock).read_bytes(),
         Path(wheel).name: Path(wheel).read_bytes(),

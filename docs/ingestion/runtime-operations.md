@@ -179,6 +179,12 @@ remaining inputs. Live SQL/Fabric execution and R53 acceptance have not occurred
 
 ## Infrastructure stop and live inputs
 
+The November 23 pipeline split supersedes combined Terraform/notebook ownership:
+Azure infrastructure and Fabric infrastructure have independent roots/states and
+pipelines; versioned environments, notebooks and Airflow content are deployed by
+Fabric artifact CI/CD. See `azure-devops-delivery.md`. No runtime candidate is
+activated just because an item or library was published.
+
 Review the bootstrap/workload Terraform plans before any apply. Bootstrap alone owns
 the RG and protected state account; workload Terraform reads the RG. Retain/bootstrap
 state securely, migrate it explicitly to Entra-authenticated locked/versioned Blob state,

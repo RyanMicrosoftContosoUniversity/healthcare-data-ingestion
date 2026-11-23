@@ -1,0 +1,20 @@
+name: healthcare-azure-$(Date:yyyyMMdd).$(Rev:r)
+trigger: none
+pr: none
+parameters:
+  - name: module
+    type: string
+    default: azure
+    values: [bootstrap, azure]
+  - name: variablesSecureFile
+    type: string
+    default: ''
+  - name: apply
+    type: boolean
+    default: false
+stages:
+  - template: templates/terraform.yml
+    parameters:
+      module: ${{ parameters.module }}
+      variablesSecureFile: ${{ parameters.variablesSecureFile }}
+      apply: ${{ parameters.apply }}

@@ -72,9 +72,10 @@ resource "azurerm_role_assignment" "event_publishers" {
 }
 
 resource "azurerm_role_assignment" "fabric_event_publisher" {
+  count                = var.fabric_workspace_identity_object_id == null ? 0 : 1
   scope                = azurerm_monitor_data_collection_rule.events.id
   role_definition_name = "Monitoring Metrics Publisher"
-  principal_id         = fabric_workspace.data.identity.service_principal_id
+  principal_id         = var.fabric_workspace_identity_object_id
 }
 
 resource "azurerm_monitor_action_group" "email" {

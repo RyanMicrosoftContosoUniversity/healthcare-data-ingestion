@@ -1,8 +1,9 @@
 param(
     [Parameter(Mandatory)][ValidateSet('Plan', 'Apply')][string]$Phase,
-    [Parameter(Mandatory)][ValidateSet('bootstrap', 'workload')][string]$Module
+    [Parameter(Mandatory)][ValidateSet('bootstrap', 'azure', 'fabric')][string]$Module
 )
 $ErrorActionPreference = 'Stop'
+if ($env:BUILD_SOURCEBRANCH -ne 'refs/heads/main') { throw 'Terraform delivery requires the reviewed, merged main branch.' }
 if (-not $env:idToken -or -not $env:servicePrincipalId) { throw 'The approved federated Azure service connection is required.' }
 $env:ARM_USE_OIDC = 'true'
 $env:ARM_OIDC_TOKEN = $env:idToken
@@ -15,13 +16,12 @@ $account = az account show -o json | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0 -or $account.id -ne $env:ARM_SUBSCRIPTION_ID -or $account.tenantId -ne '35acf02c-4b87-4ae6-9221-ff5cafd430b4') {
     throw 'Service connection targets a different approved subscription/tenant.'
 }
-$moduleDirectory = (Resolve-Path 'infrastructure\terraform').Path
-if ($Module -eq 'bootstrap') { $moduleDirectory = Join-Path $moduleDirectory 'bootstrap' }
+$moduleDirectory = (Resolve-Path "infrastructure\terraform\$Module").Path
 $planDirectory = $env:PLAN_DIRECTORY
 New-Item -ItemType Directory -Force $planDirectory | Out-Null
 $planFile = Join-Path $planDirectory 'reviewed.tfplan'
 $receiptFile = Join-Path $planDirectory 'plan-evidence.json'
-$backendKey = if ($Module -eq 'bootstrap') { 'healthcare-bootstrap.tfstate' } else { 'healthcare-data-ingestion.tfstate' }
+$backendKey = "healthcare-$Module.tfstate"
 $backendArguments = @(
     '-backend-config=resource_group_name=healthcare-data-ingestion-rg',
     '-backend-config=storage_account_name=hcingestiontfstate',
@@ -44,7 +44,7 @@ if ($Phase -eq 'Plan') {
     if ($variables.activate_alerts -or $variables.activate_generator) {
         throw 'Live runtime/email acceptance is required before separate schedule or alert activation.'
     }
-    if ($Module -eq 'workload' -and (
+    if ($Module -eq 'azure' -and (
         $variables.ContainsKey('generator_image') -and
         $variables.generator_image -and
         $variables.generator_image -notmatch '^hcingestionacr\.azurecr\.io/.+@sha256:[0-9a-f]{64}$'
@@ -58,23 +58,19 @@ if ($Phase -eq 'Plan') {
         $exists = az group exists --name healthcare-data-ingestion-rg -o tsv
         if ($LASTEXITCODE -ne 0) { throw 'Resource group discovery failed.' }
         if ($exists -eq 'false') { $stateMode = 'initial-local' }
-    } else {
-        $version = (Get-Content "$env:RELEASE_ROOT\bundle\release.json" -Raw | ConvertFrom-Json).framework_version
-        if ($variables.framework_version -and $variables.framework_version -ne $version) { throw 'Framework input does not match validated bundle.' }
-        $variables.framework_version = $version
-        if (-not $variables.retained_framework_versions) { $variables.retained_framework_versions = @($version) }
-        if (@($variables.retained_framework_versions).Count -ne 1) {
-            throw 'Retained multi-version releases require all verified prior bundles; do not substitute the current bundle.'
-        }
-        $variables.release_bundle_directories = @{ $version = "$env:RELEASE_ROOT\bundle" }
     }
     $variablesFile = Join-Path $env:AGENT_TEMPDIRECTORY 'healthcare.auto.tfvars.json'
     $variables | ConvertTo-Json -Depth 30 | Set-Content $variablesFile
 } else {
     $evidence = Get-Content $receiptFile -Raw | ConvertFrom-Json
-    if ($evidence.commit -ne $env:BUILD_SOURCEVERSION -or $evidence.module -ne $Module) { throw 'Reviewed plan source/module mismatch.' }
+    if ($evidence.commit -ne $env:BUILD_SOURCEVERSION -or $evidence.module -ne $Module -or $evidence.backend_key -ne $backendKey) { throw 'Reviewed plan source/module/backend mismatch.' }
     if ($evidence.plan_sha256 -ne (Get-FileHash $planFile -Algorithm SHA256).Hash) { throw 'Reviewed plan was changed.' }
     $stateMode = $evidence.state_mode
+}
+if ($Module -ne 'bootstrap') {
+    $legacy = az storage blob exists --account-name hcingestiontfstate --container-name tfstate --name healthcare-data-ingestion.tfstate --auth-mode login --query exists -o tsv
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot verify legacy mixed-state absence. No state ownership change is permitted.' }
+    if ($legacy -eq 'true') { throw 'Legacy mixed Terraform state exists. Perform a reviewed state split/import before using the independent Azure/Fabric roots; never apply empty new states over existing resources.' }
 }
 if ($Module -eq 'bootstrap') {
     $backend = if ($stateMode -eq 'initial-local') { 'local' } else { 'azurerm' }
@@ -90,11 +86,12 @@ if ($Phase -eq 'Plan') {
     Invoke-Tf @('plan', '-input=false', '-lock-timeout=5m', "-var-file=$variablesFile", "-out=$planFile")
     & terraform "-chdir=$moduleDirectory" show -json $planFile | Set-Content (Join-Path $planDirectory 'reviewed.plan.json')
     if ($LASTEXITCODE -ne 0) { throw 'Plan rendering failed.' }
-    uv run --locked python scripts\cicd\delivery.py plan-check "$planDirectory\reviewed.plan.json"
+    python scripts\cicd\delivery.py plan-check "$planDirectory\reviewed.plan.json" --layer $Module
     if ($LASTEXITCODE -ne 0) { throw 'Plan contains unapproved deletion/replacement.' }
     @{
         commit = $env:BUILD_SOURCEVERSION
         module = $Module
+        backend_key = $backendKey
         state_mode = $stateMode
         plan_sha256 = (Get-FileHash $planFile -Algorithm SHA256).Hash
         subscription_id = $env:ARM_SUBSCRIPTION_ID
@@ -111,6 +108,14 @@ if ($Phase -eq 'Plan') {
         }
         if (-not $migrated) { throw 'Bootstrap state migration failed. Recover/import the existing bootstrap resources; never recreate or destroy them.' }
     }
-    & terraform "-chdir=$moduleDirectory" output -json | Set-Content (Join-Path $planDirectory 'outputs.json')
+    $outputsDirectory = Join-Path $planDirectory 'deployment-outputs'
+    New-Item -ItemType Directory -Force $outputsDirectory | Out-Null
+    & terraform "-chdir=$moduleDirectory" output -json | Set-Content (Join-Path $outputsDirectory 'outputs.json')
     if ($LASTEXITCODE -ne 0) { throw 'Deployment output collection failed.' }
+    @{
+        commit = $env:BUILD_SOURCEVERSION
+        module = $Module
+        backend_key = $backendKey
+        run_id = $env:BUILD_BUILDID
+    } | ConvertTo-Json | Set-Content (Join-Path $outputsDirectory 'deployment-evidence.json')
 }

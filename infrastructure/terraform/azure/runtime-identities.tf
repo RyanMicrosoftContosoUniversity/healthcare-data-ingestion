@@ -36,23 +36,3 @@ resource "azurerm_role_assignment" "runtime_log_publisher" {
   role_definition_name = "Monitoring Metrics Publisher"
   principal_id         = var.runtime_principal_object_ids["diagnostics"]
 }
-
-resource "fabric_workspace_role_assignment" "runtime_data" {
-  for_each     = toset(["control", "orchestrator"])
-  workspace_id = fabric_workspace.data.id
-  role         = "Contributor"
-  principal = {
-    id   = var.runtime_principal_object_ids[each.key]
-    type = "ServicePrincipal"
-  }
-}
-
-resource "fabric_workspace_role_assignment" "runtime_metadata" {
-  for_each     = toset(["control", "orchestrator"])
-  workspace_id = fabric_workspace.metadata.id
-  role         = "Viewer"
-  principal = {
-    id   = var.runtime_principal_object_ids[each.key]
-    type = "ServicePrincipal"
-  }
-}
