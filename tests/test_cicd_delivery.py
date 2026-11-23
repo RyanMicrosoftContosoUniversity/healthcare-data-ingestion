@@ -81,6 +81,10 @@ def test_polling_never_forwards_credentials_to_other_hosts(url):
         ("fabric", "fabric_notebook"),
         ("fabric", "fabric_environment"),
         ("bootstrap", "fabric_workspace_role_assignment"),
+        ("bootstrap", "azuread_application"),
+        ("fabric", "azuread_service_principal"),
+        ("azure", "azuread_application_password"),
+        ("azure", "tls_private_key"),
     ],
 )
 def test_terraform_plan_rejects_cross_boundary_resources(layer, resource_type):
@@ -97,6 +101,25 @@ def test_terraform_plan_rejects_cross_boundary_resources(layer, resource_type):
             },
             layer,
         )
+
+
+@pytest.mark.parametrize(
+    "resource_type",
+    ["azuread_application", "azuread_service_principal", "azuread_application_certificate"],
+)
+def test_azure_plan_accepts_certificate_backed_runtime_identity_resources(resource_type):
+    delivery.validate_plan(
+        {
+            "resource_changes": [
+                {
+                    "address": resource_type + ".runtime",
+                    "type": resource_type,
+                    "change": {"actions": ["create"]},
+                }
+            ]
+        },
+        "azure",
+    )
 
 
 def test_artifact_definitions_bind_notebook_without_mutating_bundle(tmp_path):
