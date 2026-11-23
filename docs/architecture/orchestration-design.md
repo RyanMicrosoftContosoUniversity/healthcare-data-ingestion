@@ -1,6 +1,19 @@
 # Metadata-Driven Orchestration and Release Design
 
-**Status: approved directions and open design decisions, not implementation approval.**
+**Status: handoff03 approves remaining recommended directions and authorizes
+development; concrete specifications/testing are required, not assumed complete.
+Infrastructure deployment still requires the actual reviewed costed Terraform plan.**
+
+`discussions\discussed-changes-03.md` supersedes contradictory earlier open-choice
+labels below. Use five-minute single-owner snapshot-pinned reconciliation, fixed
+input/output/window evidence, original-version reruns, queued/running pinning,
+order-aware events and fenced claims; no silent historical-input substitution.
+Critical quality blocks publication and confirmed corruption requires operator
+clearance of affected lineage; unrelated work continues. Backfills are explicit,
+checkpointed and subordinate to conflicting daily work. Metadata outage blocks new
+starts until safe in-flight commit reconciliation. Configuration/hotfixes require PR
+code review, with pinned published environments and safe technical rollback for new
+runs. Outlook/email only; seven-year audit target/reference holds and native backups.
 
 Reconciled from `discussions\discussed-changes.md` (November 19, 2026) and
 `discussions\discussion-02.md` (November 20, 2026). Both records remain unchanged.

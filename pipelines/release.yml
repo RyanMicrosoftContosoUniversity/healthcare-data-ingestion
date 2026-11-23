@@ -1,0 +1,98 @@
+name: healthcare-release-$(Date:yyyyMMdd).$(Rev:r)
+trigger: none
+pr: none
+parameters:
+  - name: ciRunId
+    type: number
+    default: 0
+  - name: infrastructureRunId
+    type: number
+    default: 0
+  - name: operation
+    type: string
+    default: fabric-assets
+    values: [generator-image, database-migrations, fabric-assets]
+  - name: migrationSecureFile
+    type: string
+    default: ''
+jobs:
+  - job: Deliver
+    pool:
+      vmImage: windows-2022
+    timeoutInMinutes: 60
+    steps:
+      - checkout: self
+        fetchDepth: 1
+        persistCredentials: false
+      - template: templates/tools.yml
+      - template: templates/release.yml
+        parameters:
+          ciRunId: ${{ parameters.ciRunId }}
+      - ${{ if eq(parameters.operation, 'generator-image') }}:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: fabric-sc
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $ErrorActionPreference = 'Stop'
+                az acr build --registry hcingestionacr --image "generator:$env:BUILD_SOURCEVERSION" --file scripts\synthetic-data\Dockerfile .
+                if ($LASTEXITCODE -ne 0) { throw 'Immutable generator image build failed. Provision the registry first.' }
+                $digest = az acr manifest show-metadata --registry hcingestionacr --name "generator:$env:BUILD_SOURCEVERSION" --query digest -o tsv
+                if ($LASTEXITCODE -ne 0 -or $digest -notmatch '^sha256:[0-9a-f]{64}$') { throw 'Registry digest lookup failed.' }
+                New-Item -ItemType Directory -Force $env:RECEIPT_DIRECTORY | Out-Null
+                @{ commit=$env:BUILD_SOURCEVERSION; image="hcingestionacr.azurecr.io/generator@$digest" } |
+                  ConvertTo-Json | Set-Content "$env:RECEIPT_DIRECTORY\generator-image.json"
+            env:
+              RECEIPT_DIRECTORY: $(Build.ArtifactStagingDirectory)\delivery
+      - ${{ if eq(parameters.operation, 'database-migrations') }}:
+          - ${{ if eq(parameters.migrationSecureFile, '') }}:
+              - pwsh: |
+                  throw 'Select migrationSecureFile with actual transactional SQL endpoints. The WIF deployment identity must already have approved database migration permissions.'
+          - ${{ if ne(parameters.migrationSecureFile, '') }}:
+              - task: DownloadSecureFile@1
+                name: migration
+                inputs:
+                  secureFile: ${{ parameters.migrationSecureFile }}
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: fabric-sc
+                  scriptType: pscore
+                  scriptLocation: inlineScript
+                  inlineScript: |
+                    uv run --locked python scripts\cicd\Migrate-Databases.py "$env:MIGRATION_FILE" "$env:RECEIPT_DIRECTORY\migrations.json"
+                    if ($LASTEXITCODE -ne 0) { throw 'Database migration failed; no runtime is activated.' }
+                env:
+                  MIGRATION_FILE: $(migration.secureFilePath)
+                  RECEIPT_DIRECTORY: $(Build.ArtifactStagingDirectory)\delivery
+      - ${{ if eq(parameters.operation, 'fabric-assets') }}:
+          - pwsh: |
+              if ([int]$env:INFRASTRUCTURE_RUN_ID -lt 1) { throw 'Select the successful workload infrastructure apply run.' }
+            env:
+              INFRASTRUCTURE_RUN_ID: ${{ parameters.infrastructureRunId }}
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: specific
+              project: '5fa2c482-b68c-477d-bfdb-15c5a02d8b43'
+              definition: $(INFRA_PIPELINE_ID)
+              buildVersionToDownload: specific
+              pipelineId: ${{ parameters.infrastructureRunId }}
+              artifactName: deployment-outputs
+              targetPath: $(Pipeline.Workspace)\infrastructure-outputs
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: fabric-sc
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                uv run --locked python scripts\cicd\delivery.py publish "$env:RELEASE_ROOT" --outputs "$env:OUTPUTS_FILE" --receipt "$env:RECEIPT_DIRECTORY\fabric-delivery.json"
+                if ($LASTEXITCODE -ne 0) { throw 'Fabric delivery failed; partial evidence is retained and no release is activated.' }
+            env:
+              RELEASE_ROOT: $(Pipeline.Workspace)\release
+              OUTPUTS_FILE: $(Pipeline.Workspace)\infrastructure-outputs\outputs.json
+              RECEIPT_DIRECTORY: $(Build.ArtifactStagingDirectory)\delivery
+      - task: PublishPipelineArtifact@1
+        condition: succeededOrFailed()
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)\delivery
+          artifactName: delivery-receipts

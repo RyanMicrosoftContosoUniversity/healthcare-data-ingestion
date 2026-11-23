@@ -3,6 +3,35 @@
 import re
 from collections.abc import Mapping
 
+
+def bind_source_contracts(snapshot, contracts):
+    """Bind approved systems to connection refs through immutable source dataset IDs."""
+    systems = {}
+    for contract in contracts.values():
+        source = contract["source_system"].casefold()
+        if source in systems and systems[source] != contract:
+            raise ValueError("Conflicting approved contracts for one source system.")
+        systems[source] = contract
+    bound = {}
+    for dataset in snapshot.datasets:
+        if not dataset.external or dataset.layer != "source":
+            continue
+        parts = dataset.dataset_id.split(".")
+        if len(parts) < 3 or parts[0] != "source" or parts[1] not in systems:
+            raise ValueError("A source dataset has no approved system contract.")
+        contract = systems[parts[1]]
+        for mapping in dataset.physical_maps.values():
+            connection = mapping["connection_ref"]
+            if connection in bound and bound[connection] != contract:
+                raise ValueError("A source connection cannot mix system contracts.")
+            if mapping["schema"] != contract["schema"] or mapping["table"] not in {
+                table["name"] for table in contract["tables"]
+            }:
+                raise ValueError("The source mapping differs from its approved contract.")
+            bound[connection] = contract
+    return bound
+
+
 _IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]{0,127}\Z")
 _SQL_TYPE = re.compile(
     r"(?:bigint|int|smallint|tinyint|bit|date|uniqueidentifier"

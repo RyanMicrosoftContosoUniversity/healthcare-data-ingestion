@@ -1,0 +1,17 @@
+parameters:
+  - name: terraform
+    type: boolean
+    default: false
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.11'
+  - pwsh: |
+      python -m pip install --disable-pip-version-check uv==0.11.7
+      if ($LASTEXITCODE -ne 0) { throw 'uv installation failed.' }
+      uv sync --locked --group dev --extra cloud --python 3.11
+      if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
+    displayName: Install locked project dependencies
+  - ${{ if eq(parameters.terraform, true) }}:
+      - pwsh: .\scripts\cicd\Install-Terraform.ps1
+        displayName: Install checksum-verified Terraform 1.13.4

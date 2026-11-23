@@ -18,6 +18,14 @@ Existing source-model approvals and cloud-target gates remain unchanged.
 
 ## Purpose and Current State
 
+Handoff03 (`discussions\discussed-changes-03.md`) approves the remaining recommended
+direction, including fail-closed unavailable/unpersisted evidence and Strict live
+source validation before eligible fresh extraction. Caching cannot replace the live
+pass; keep one full pass, staged validation and capture-contract replay checks.
+Concrete fingerprints, evidence persistence, DDL-race strategy and tests must now
+be implemented. Earlier "review required" wording is historical specification work,
+not an unresolved architectural choice; no deployment is authorized here.
+
 Detect differences between live source schemas and approved ingestion contracts
 before copying source records or appending them to Bronze.
 

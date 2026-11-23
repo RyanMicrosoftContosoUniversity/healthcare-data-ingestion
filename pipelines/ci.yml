@@ -1,0 +1,80 @@
+name: healthcare-ci-$(Date:yyyyMMdd).$(Rev:r)
+trigger:
+  branches:
+    include: [main]
+pr:
+  branches:
+    include: [main]
+jobs:
+  - job: Native
+    pool:
+      vmImage: windows-2022
+    timeoutInMinutes: 45
+    steps:
+      - checkout: self
+        fetchDepth: 1
+        persistCredentials: false
+      - template: templates/tools.yml
+      - pwsh: .\scripts\cicd\Test-Release.ps1 -OutputDirectory "$env:OUTPUT_DIRECTORY"
+        env:
+          OUTPUT_DIRECTORY: $(Build.ArtifactStagingDirectory)\validated-release
+        displayName: Lint, native tests, package and immutable release
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFormat: JUnit
+          testResultsFiles: build\native-tests.xml
+          testRunTitle: Native ingestion tests
+          failTaskOnFailedTests: true
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)\validated-release
+          artifactName: validated-release
+  - job: Spark
+    pool:
+      vmImage: ubuntu-24.04
+    timeoutInMinutes: 30
+    steps:
+      - checkout: self
+        fetchDepth: 1
+        persistCredentials: false
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.13'
+      - bash: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          export SPARK_LOCAL_IP=127.0.0.1
+          python -m pip install --disable-pip-version-check uv==0.11.7
+          uv sync --locked --group dev --extra spark --extra cloud --python 3.13
+          uv run --locked pytest tests/test_execution_runtime.py tests/test_spark_runtime.py --junitxml=build/spark-tests.xml
+        displayName: Real Spark 4.1 and Delta 4.2 integration
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFormat: JUnit
+          testResultsFiles: build/spark-tests.xml
+          testRunTitle: Real Spark publication and Patient integration
+          failTaskOnFailedTests: true
+  - job: Terraform
+    pool:
+      vmImage: windows-2022
+    timeoutInMinutes: 20
+    steps:
+      - checkout: self
+        fetchDepth: 1
+        persistCredentials: false
+      - pwsh: .\scripts\cicd\Install-Terraform.ps1
+        displayName: Install checksum-verified Terraform
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          terraform -chdir=infrastructure\terraform fmt -check -recursive
+          if ($LASTEXITCODE -ne 0) { throw 'Terraform format failed.' }
+          foreach ($module in @('infrastructure\terraform', 'infrastructure\terraform\bootstrap')) {
+            terraform "-chdir=$module" init -backend=false -input=false -lockfile=readonly
+            if ($LASTEXITCODE -ne 0) { throw 'Terraform initialization failed.' }
+            terraform "-chdir=$module" validate
+            if ($LASTEXITCODE -ne 0) { throw 'Terraform validation failed.' }
+          }
+        displayName: Validate both modules without cloud credentials or state access

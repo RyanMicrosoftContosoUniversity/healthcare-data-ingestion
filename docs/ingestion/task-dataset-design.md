@@ -1,7 +1,18 @@
 # Processing Tasks and Datasets: Metadata Revision
 
 **Status: logical direction approved in `discussions\discussion-02.md`;
-physical schemas and runtime implementation remain under review.**
+handoff03 approves the remaining recommended directions for development.
+Concrete physical definitions, runtime code and tests must now be produced;
+no infrastructure deployment is authorized.**
+
+Latest explicit requirements in `discussions\discussed-changes-03.md` override older
+proposals: output history/current readiness/attempts are separate; immutable IDs and
+environment maps; one authoritative producer per release/scope; fixed input versions,
+window-aware progress, original-version queued/running/manual reruns and no silent
+snapshot substitution; order-aware/coalesced events with five-minute single-owner
+reconciliation; critical quality/quarantine and corruption blocks; explicit daily-
+priority backfills; PR-reviewed release/environment pinning; seven-year audit target,
+protected references, email-only alerts and native metadata backups.
 
 This supersedes conflicting task/step proposals in the original 17-table dictionary.
 It is a revision specification, not DDL, a migration, or a claim that new tables exist.

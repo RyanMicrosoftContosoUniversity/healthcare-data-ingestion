@@ -1,0 +1,26 @@
+parameters:
+  - name: ciRunId
+    type: number
+steps:
+  - pwsh: |
+      .\scripts\cicd\Confirm-CiRun.ps1 -RunId $env:CI_RUN_ID -DefinitionId $env:CI_DEFINITION_ID
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      CI_RUN_ID: ${{ parameters.ciRunId }}
+      CI_DEFINITION_ID: $(CI_PIPELINE_ID)
+    displayName: Require successful CI for this exact reviewed main commit
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      buildType: specific
+      project: '5fa2c482-b68c-477d-bfdb-15c5a02d8b43'
+      definition: $(CI_PIPELINE_ID)
+      buildVersionToDownload: specific
+      pipelineId: ${{ parameters.ciRunId }}
+      artifactName: validated-release
+      targetPath: $(Pipeline.Workspace)\release
+  - pwsh: |
+      uv run --locked python scripts\cicd\delivery.py verify "$env:RELEASE_ROOT" --commit "$env:BUILD_SOURCEVERSION"
+      if ($LASTEXITCODE -ne 0) { throw 'Release verification failed.' }
+    env:
+      RELEASE_ROOT: $(Pipeline.Workspace)\release
+    displayName: Verify every bundle byte and CI provenance

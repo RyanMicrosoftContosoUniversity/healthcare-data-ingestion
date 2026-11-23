@@ -5,23 +5,35 @@ framework. These models are representative simulations, not proprietary Epic sch
 
 ## Implementation Boundary
 
+**Current authorization:** `discussions\discussed-changes-03.md` approves remaining
+recommended architectural directions and the user has requested development.
+Concrete implementation and evidence are being produced; older "decisions still
+needed" statements below are historical and do not require another choice loop.
+Cloud resources/apply remain gated by the actual reviewed costed Terraform plan.
+Latest policies include five-minute reconciliation, fixed-version/window-aware
+recovery, PR-reviewed pinned releases/environments, critical-quality/corruption
+blocking, explicit daily-priority backfills, seven-year execution/readiness audit
+target, Outlook/email-only notifications and native Fabric SQL backup/restore.
+
 The approved release ends at all-table Bronze ingestion and a working Clarity Patient
 Silver flow, with reusable Python utilities, isolated benchmarks, diagnostics, and alerts.
 No Gold, reporting, or additional Silver domains are included.
 
-Implementation is staged. Source models are approved; cloud target confirmation and
-framework/control-table design approval remain separate gates. The presence of source
-contracts or design documents does not mean databases or pipelines have been deployed.
+Local source, metadata/control, discovery, Bronze and Patient Silver implementation
+is authorized. Cloud deployment is not. Local tests and prepared artifacts do not
+establish live SQL/Fabric connectivity, permissions, throughput or alert delivery.
 
 The accepted control store is a **Fabric SQL Database in a dedicated metadata workspace**,
 separate from the data/ingestion workspace. It holds the authoritative framework
-configuration, runtime state, and logging metadata. Workspace/database names and access
-will be confirmed before creation; the two simulated source databases remain in Azure SQL.
+configuration, runtime state, and logging metadata. Approved names are
+`healthcare-data-ingestion-metadata` / `healthcare-data-ingestion-metadata-db`;
+actual IDs and runtime permissions still require live validation. The two simulated
+source databases remain in Azure SQL.
 
 The Bronze metadata column set is accepted, with `_ingest_source_name` as a readable
 string such as `Clarity.dbo.Patient`. The complete eight-column contract is under
 **Accepted Bronze Row Metadata** in `docs\ingestion\metadata-design.md`; internal
-control-store source-object IDs remain unchanged. Other framework approvals are pending.
+control-store source-object IDs remain unchanged.
 
 `discussions\discussion-02.md` consolidates the earlier record and is reconciled in
 `docs\architecture\orchestration-design.md`. Approved directions now include task JSON
@@ -31,7 +43,7 @@ activation, and audited incident rollback. Latest expected upstream failure bloc
 consumers by default even if an older success is recent.
 
 Airflow hosting is selected: a **new Fabric-managed Apache Airflow job** for this
-project. Workspace/item/capacity placement and other deployment settings remain pending;
+project in `healthcare-data-ingestion-data` on the existing F32 capacity;
 no separate self-managed Airflow host is planned.
 
 **Synthea plus versioned mapping configuration** is selected for source generation and
@@ -39,8 +51,9 @@ loading into the approved Azure SQL models through independent source loaders.
 **Azure Container Apps Jobs on Consumption** is selected for generation, with
 **approximately $10/month as the generation planning target**, not a fixed fee or
 enforced cap. That estimate excludes SQL databases, normal Fabric ingestion and the
-initial historical seed. Generator sizing, persistent storage, exact schedule and
-deployment targets remain open; no resources have been deployed.
+initial historical seed. The approved evaluation profile is 2 vCPUs/4 GiB, one
+worker, serial loaders, 45-minute attempts and one transient retry; no resources
+have been deployed.
 
 The workload is **demo-first and cost-conscious**, not hospital-volume simulation.
 The approved profile is 1,000 initial patients with 12 months retained history and
@@ -50,8 +63,9 @@ per SQL database is the accepted initial evaluation baseline, not a deployment a
 or throughput guarantee. Correctness, recovery and isolated benchmarks remain in scope.
 
 Synthetic data generation runs well before daily Fabric ingestion, with source data
-intended to be ready before the 10:00 AM start. The generator's exact start time and
-handling of late/failed generation remain open; continuous generation is not assumed.
+intended to be ready before the 10:00 AM start. Generation is scheduled at 12:00 UTC.
+Missing/failed expected checkpoints block affected consumers, never silently selecting
+an older success; independently committed source work remains useful.
 
 Initial defaults are daily runs at **10:00 AM Eastern local time, observing daylight
 saving**, and a **24-elapsed-hour maximum age of committed source coverage** for downstream
@@ -67,28 +81,33 @@ Future processed-record monitoring will use historical mean plus/minus two stand
 deviations for UCL/LCL. Implementation, baseline details and breach response are deferred.
 
 Review the logical revision in `docs\ingestion\task-dataset-design.md`.
-**Decisions still needed from you:** `docs\architecture\build-decisions.md` lists
-D01-D12 with the implementation, provisioning, or activation gate each blocks.
+`docs\architecture\build-decisions.md` preserves decisions and the engineering checklist;
+handoff03 closes the remaining architectural-choice loop.
 The original 17-table diagrams are baseline, not finalized revised physical schemas.
 These decisions do not expand the first Patient-only Silver build or authorize cloud
 creation. **Strict schema comparison is approved**: nullable additions, widening and
 other ingestion-relevant contract differences block only the affected table pending
 review/approved revision, without automatic contract/target evolution. One source pass
-remains the direction; optional lightweight recheck, unavailable-evidence handling and
-other discovery mechanics still need review.
+remains the direction. One shared source transaction and catalog pass protects captures;
+staged validation and immutable replay do not substitute today's live schema for history.
 
 ## Local Development
 
-Use Python 3.11-3.13 and `uv`. The eventual Spark environment must be validated and pinned
-against Fabric's approved runtime before deploying Spark-dependent code.
+Use Python 3.11-3.13 and `uv`. Spark validation uses Linux, Spark 4.1/Delta 4.2,
+Python 3.13 and Java 21, matching Fabric Runtime 2.0. Airflow's documented profile is
+2.10.5/Python 3.12; live item configuration and ODBC18 availability still require acceptance.
 
 ```powershell
 uv sync --group dev --python 3.11
 .\scripts\Test-Project.ps1
 ```
 
-`uv.lock` records resolved dependencies. The initial package intentionally has no Spark
-or cloud SDK runtime dependencies; add those only with the approved execution components.
+`uv.lock` records dependencies; `cloud` and `spark` extras pin the runtime SDKs.
+Native Windows checks skip actual Spark tests, which run in the bounded Linux container.
+See `docs\ingestion\runtime-operations.md` for release preparation and live prerequisites.
+`.github\workflows\validate.yml` prepares native builds/bundles, real Spark checks
+and backend-disabled Terraform validation on reviewed changes. It does not deploy,
+activate releases or enable alerts; hosted CI execution still requires a pushed PR.
 
 ## Source Models
 
@@ -125,10 +144,9 @@ document update to silently alter deployed schemas.
 ## Deployment and Review Gates
 
 `.azure\deployment-plan.md` tracks preparation and target confirmation.
-Framework tables are documented in `docs\ingestion\metadata-design.md` for review
-before implementing control storage, the 28 source configuration records, or Bronze flows.
-The standalone process document `docs\ingestion\schema-discovery-design.md` also
-requires explicit review before that build begins.
+Framework design is in `docs\ingestion\metadata-design.md`; implemented migrations,
+protocol contracts and the 29-task release are in `database\metadata\` and
+`metadata\framework\`. Source configurations cover all 28 approved tables.
 Never commit credentials, Terraform state, raw logs, or generated source data.
 
 The proposed framework dictionaries are now available in that design document.
@@ -154,7 +172,8 @@ Review `docs\ingestion\schema-discovery-design.md` for the required discovery wo
 schema comparisons, blocking policy, retained evidence, and recovery behavior. The
 framework design's **Required Schema Discovery Before Bronze Ingestion** section
 contains the aligned integration specification. Current Python validation checks the
-local contract files only; live discovery and its ingestion gate have not been implemented.
+contracts and protocol adapters; the implemented live discovery gate awaits deployed
+SQL/Fabric acceptance.
 
 If direct package downloads are unavailable, configure `UV_DEFAULT_INDEX` to your
 organization's approved package feed; do not disable certificate verification.

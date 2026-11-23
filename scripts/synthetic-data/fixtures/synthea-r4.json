@@ -1,0 +1,153 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-a",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-a",
+        "name": [{"given": ["Synthetic"], "family": "Fixture"}],
+        "birthDate": "1984-02-29",
+        "gender": "female",
+        "address": [{"city": "Synthetic City", "state": "MA", "postalCode": "02101"}]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:provider-a",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "provider-a",
+        "active": true,
+        "name": [{"given": ["Synthetic"], "family": "Clinician"}]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:department-a",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "department-a",
+        "name": "Synthetic hospital"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-a",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "encounter-a",
+        "subject": {"reference": "urn:uuid:patient-a"},
+        "serviceProvider": {"reference": "urn:uuid:department-a"},
+        "participant": [{"individual": {"reference": "urn:uuid:provider-a"}}],
+        "class": {"code": "AMB"},
+        "status": "finished",
+        "period": {
+          "start": "2026-10-12T10:00:00.0000007Z",
+          "end": "2026-10-12T10:30:00.0000007Z"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-a",
+        "subject": {"reference": "urn:uuid:patient-a"},
+        "encounter": {"reference": "urn:uuid:encounter-a"},
+        "recordedDate": "2026-10-12T10:00:00.0000007Z",
+        "code": {"coding": [{
+          "system": "http://snomed.info/sct", "code": "44054006",
+          "display": "Synthetic diabetes fixture"
+        }]}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "procedure-a",
+        "subject": {"reference": "urn:uuid:patient-a"},
+        "encounter": {"reference": "urn:uuid:encounter-a"},
+        "performer": [{"actor": {"reference": "urn:uuid:provider-a"}}],
+        "status": "completed",
+        "performedDateTime": "2026-10-12T10:05:00Z",
+        "code": {"coding": [{
+          "system": "http://snomed.info/sct", "code": "73761001",
+          "display": "Synthetic procedure fixture"
+        }]}
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:medication-a",
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "medication-a",
+        "subject": {"reference": "urn:uuid:patient-a"},
+        "encounter": {"reference": "urn:uuid:encounter-a"},
+        "requester": {"reference": "urn:uuid:provider-a"},
+        "status": "active",
+        "authoredOn": "2026-10-12T10:00:00.0000007Z",
+        "medicationCodeableConcept": {"coding": [{
+          "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+          "code": "860975", "display": "Synthetic medication fixture"
+        }]},
+        "dosageInstruction": [{
+          "doseAndRate": [{"doseQuantity": {"value": 1.2500, "unit": "mg"}}]
+        }]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationAdministration",
+        "id": "administration-a",
+        "subject": {"reference": "urn:uuid:patient-a"},
+        "context": {"reference": "urn:uuid:encounter-a"},
+        "request": {"reference": "urn:uuid:medication-a"},
+        "performer": [{"actor": {"reference": "urn:uuid:provider-a"}}],
+        "status": "completed",
+        "effectiveDateTime": "2026-10-12T10:10:00.0000007Z",
+        "dosage": {"dose": {"value": 1.2500, "unit": "mg"}}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "laboratory-a",
+        "subject": {"reference": "urn:uuid:patient-a"},
+        "encounter": {"reference": "urn:uuid:encounter-a"},
+        "performer": [{"reference": "urn:uuid:provider-a"}],
+        "status": "final",
+        "effectiveDateTime": "2026-10-12T10:15:00.0000007Z",
+        "category": [{"coding": [{"code": "laboratory"}]}],
+        "code": {"coding": [{
+          "system": "http://loinc.org", "code": "2339-0", "display": "Synthetic glucose"
+        }]},
+        "valueQuantity": {"value": 123.123456, "unit": "mg/dL"},
+        "referenceRange": [{
+          "low": {"value": 70, "unit": "mg/dL"},
+          "high": {"value": 140, "unit": "mg/dL"}
+        }]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "vital-a",
+        "subject": {"reference": "urn:uuid:patient-a"},
+        "encounter": {"reference": "urn:uuid:encounter-a"},
+        "status": "final",
+        "effectiveDateTime": "2026-10-12T10:20:00.0000007Z",
+        "category": [{"coding": [{"code": "vital-signs"}]}],
+        "code": {"coding": [{
+          "system": "http://loinc.org", "code": "8867-4", "display": "Synthetic pulse"
+        }]},
+        "valueQuantity": {"value": 72, "unit": "/min"}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Immunization",
+        "id": "archive-only-a",
+        "status": "completed",
+        "patient": {"reference": "urn:uuid:patient-a"}
+      }
+    }
+  ]
+}
